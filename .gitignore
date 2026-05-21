@@ -5,3 +5,4 @@ schemas/__pycache__/
 temp/
 resources/
 .env
+backend/schemas/__pycache__/

@@ -68,11 +68,11 @@ def _build_mongo_uri() -> str:
 
 def process_to_json() -> None:
     try:
-        from schemas.menu import CardapioResponseSchema
+        from backend.schemas.menu import CardapioResponseSchema
     except ModuleNotFoundError:
         if str(PROJECT_ROOT) not in sys.path:
             sys.path.insert(0, str(PROJECT_ROOT))
-        from schemas.menu import CardapioResponseSchema
+        from backend.schemas.menu import CardapioResponseSchema
 
     _load_env_file(ENV_PATH)
     client = genai.Client()
