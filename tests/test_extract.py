@@ -99,9 +99,11 @@ class TestGetWeeklyMenuUrlIntegration(unittest.TestCase):
                 "scraper.extract.requests.get",
                 side_effect=requests.RequestException("fail"),
             ),
-            patch("builtins.print") as printer,
+            self.assertLogs("scraper.extract", level="ERROR") as log,
         ):
             url = extract.get_weekly_menu_url()
 
         self.assertIsNone(url)
-        printer.assert_called()
+        self.assertTrue(
+            any("Failed to fetch menu" in message for message in log.output)
+        )

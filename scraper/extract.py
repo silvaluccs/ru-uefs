@@ -1,5 +1,9 @@
+import logging
+
 import requests
 from bs4 import BeautifulSoup, Tag
+
+logger = logging.getLogger(__name__)
 
 PAGE_URL = "http://www.propaae.uefs.br/modules/conteudo/conteudo.php?conteudo=15"
 BASE_URL = "http://www.propaae.uefs.br"
@@ -7,13 +11,16 @@ BASE_URL = "http://www.propaae.uefs.br"
 
 def fetch_page(url: str) -> str:
     """Fetches and returns the HTML content of a page."""
+    logger.info("Fetching page", extra={"url": url})
     response = requests.get(url, timeout=10)
     response.raise_for_status()
+    logger.debug("Fetched page successfully", extra={"url": url})
     return response.text
 
 
 def parse_html(html: str) -> BeautifulSoup:
     """Parses HTML string into a BeautifulSoup object."""
+    logger.debug("Parsing HTML", extra={"length": len(html)})
     return BeautifulSoup(html, "html.parser")
 
 
@@ -41,9 +48,12 @@ def extract_menu_url(soup: BeautifulSoup) -> str | None:
     link = soup.find("a", href=_has_menu_keyword)
 
     if not isinstance(link, Tag):
+        logger.warning("Menu link not found in HTML")
         return None
 
-    return _normalize_href(link.get("href"))
+    href = _normalize_href(link.get("href"))
+    logger.info("Menu link extracted", extra={"href": href})
+    return href
 
 
 def ensure_absolute_url(url: str, base: str = "http://www.propaae.uefs.br") -> str:
@@ -60,10 +70,12 @@ def get_weekly_menu_url() -> str | None:
         relative_url = extract_menu_url(soup)
 
         if relative_url:
-            return ensure_absolute_url(relative_url, BASE_URL)
+            absolute_url = ensure_absolute_url(relative_url, BASE_URL)
+            logger.info("Absolute menu URL resolved", extra={"url": absolute_url})
+            return absolute_url
         return None
     except requests.RequestException as error:
-        print(f"Failed to fetch menu: {error}")
+        logger.error("Failed to fetch menu", exc_info=error)
         return None
 
 
@@ -73,10 +85,13 @@ def main() -> None:
     url = get_weekly_menu_url()
 
     if url:
+        logger.info("Menu link resolved", extra={"url": url})
         print(f"✅ Menu link: {url}")
     else:
+        logger.error("Menu link not found")
         print("❌ Menu link not found")
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     main()
