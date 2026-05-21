@@ -3,3 +3,5 @@ tests/__pycache__/
 scraper/__pycache__/
 schemas/__pycache__/
 temp/
+resources/
+.env
