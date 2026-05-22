@@ -20,7 +20,7 @@ interface StatusRestaurante {
 }
 
 function obterStatusErefeicaoAtual(): StatusRestaurante {
-  const agora = new Date();
+  const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
   const horas = agora.getHours();
   const minutos = agora.getMinutes();
   const tempoEmMinutos = horas * 60 + minutos;
@@ -246,11 +246,10 @@ export function HomePage() {
         {/* Badge de Status */}
         <div className="flex justify-center pt-1">
           <div
-            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold shadow-xs border transition-all duration-300 ${
-              statusRu.estaAberto
+            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold shadow-xs border transition-all duration-300 ${statusRu.estaAberto
                 ? "bg-emerald-50 border-emerald-100 text-emerald-700"
                 : "bg-amber-50 border-amber-100 text-red-700"
-            }`}
+              }`}
           >
             <span
               className={`w-2 h-2 rounded-full ${statusRu.estaAberto ? "bg-emerald-500" : "bg-red-500"} animate-pulse`}
