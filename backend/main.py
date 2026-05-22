@@ -1,4 +1,6 @@
+import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,6 +8,10 @@ from fastapi.staticfiles import StaticFiles
 
 from backend.api.route import router as menu_router
 from backend.config.database import close_db_client, get_db_client
+
+logger = logging.getLogger(__name__)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+RESOURCES_DIR = PROJECT_ROOT / "resources"
 
 
 @asynccontextmanager
@@ -42,6 +48,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="../resources"), name="static")
+# Mount static resources directory (served at /static)
+if RESOURCES_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(RESOURCES_DIR)), name="static")
+else:
+    logger.warning(
+        "Resources directory not found, skipping static mount: %s", str(RESOURCES_DIR)
+    )
 
 app.include_router(menu_router)
