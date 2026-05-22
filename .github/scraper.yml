@@ -1,0 +1,31 @@
+name: Executar Scraper do RU
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch: 
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar o Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar o Python
+        uses: actions/setup-python@v5
+        with:
+          python-python: '3.11' 
+
+      - name: Instalar Dependências do Projeto
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Executar o Scraper
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          PYTHONPATH: . 
+        run: python scraper/process_menu.py 
