@@ -1,5 +1,7 @@
 import logging
 
+import time
+
 import requests
 from bs4 import BeautifulSoup, Tag
 
@@ -10,13 +12,26 @@ BASE_URL = "http://www.propaae.uefs.br"
 
 
 def fetch_page(url: str) -> str:
-    """Fetches and returns the HTML content of a page."""
+    """Fetches and returns the HTML content of a page with retries."""
     logger.info("Fetching page", extra={"url": url})
-    response = requests.get(url, timeout=10)
-    response.raise_for_status()
-    logger.debug("Fetched page successfully", extra={"url": url})
-    return response.text
-
+    
+    # Simula um navegador real
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    
+    # Tenta até 3 vezes se der timeout
+    for tentativa in range(3):
+        try:
+            response = requests.get(url, headers=headers, timeout=20) # Aumentamos para 20 segundos
+            response.raise_for_status()
+            logger.debug("Fetched page successfully", extra={"url": url})
+            return response.text
+        except requests.exceptions.ConnectTimeout as e:
+            if tentativa == 2: # Se for a última tentativa, lança o erro
+                raise e
+            logger.warning(f"Timeout na tentativa {tentativa + 1}. Tentando novamente em 5 segundos...")
+            time.sleep(5)
 
 def parse_html(html: str) -> BeautifulSoup:
     """Parses HTML string into a BeautifulSoup object."""
