@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 from datetime import datetime, timezone
-from functools import lru_cache
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -18,8 +17,6 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"
 PDF_DIR = PROJECT_ROOT / "temp"
-RESOURCES_DIR = PROJECT_ROOT / "resources"
-IMAGE_MAPPING_PATH = RESOURCES_DIR / "mapeamento_imagens.json"
 DEFAULT_IMAGE = "prato_padrao.png"
 RELATIVE_IMAGES_DIR = Path("resources") / "images"
 
@@ -147,10 +144,9 @@ def process_to_json() -> None:
             return
 
         json_final = json.loads(response.text)
-        json_with_images = add_image_urls(json_final)
 
-        date_start = json_with_images.get("data_inicio")
-        date_end = json_with_images.get("data_fim")
+        date_start = json_final.get("data_inicio")
+        date_end = json_final.get("data_fim")
         if not date_start or not date_end:
             logger.error("JSON sem data_inicio/data_fim. Inserção ignorada.")
             return
@@ -177,7 +173,7 @@ def process_to_json() -> None:
                 )
                 return
 
-            document = dict(json_with_images)
+            document = dict(json_final)
             document["created_at"] = datetime.now(timezone.utc)
             result = collection.insert_one(document)
 
@@ -222,133 +218,6 @@ def run() -> None:
         return
 
     process_to_json()
-
-
-def _map_image_value(value: object) -> str | list[str] | None:
-    """Return image URL(s) for a field value."""
-    if isinstance(value, list):
-        return [
-            map_image_from_json(item if isinstance(item, str) else "") for item in value
-        ]
-    if isinstance(value, str):
-        return map_image_from_json(value)
-    return None
-
-
-def _add_images_to_meal(meal: object) -> object:
-    """Add *_img fields to a meal dict and return a new dict."""
-    if not isinstance(meal, dict):
-        return meal
-
-    result = dict(meal)
-    for key, value in meal.items():
-        if key.endswith("_img"):
-            continue
-        image_value = _map_image_value(value)
-        if image_value is not None:
-            result[f"{key}_img"] = image_value
-    return result
-
-
-def add_image_urls(menu_data: dict) -> dict:
-    """Add image URL fields for all meal items in the menu data."""
-    cardapio = menu_data.get("cardapio")
-    if not isinstance(cardapio, list):
-        logger.warning("Campo 'cardapio' não encontrado ou inválido.")
-        return menu_data
-
-    new_cardapio: list[object] = []
-    for day in cardapio:
-        if not isinstance(day, dict):
-            new_cardapio.append(day)
-            continue
-
-        refeicoes = day.get("refeicoes")
-        if not isinstance(refeicoes, list):
-            new_cardapio.append(day)
-            continue
-
-        new_refeicoes: list[object] = []
-        for refeicao in refeicoes:
-            if not isinstance(refeicao, dict):
-                new_refeicoes.append(refeicao)
-                continue
-
-            new_refeicao = {
-                meal_name: _add_images_to_meal(meal_data)
-                for meal_name, meal_data in refeicao.items()
-            }
-            new_refeicoes.append(new_refeicao)
-
-        new_day = dict(day)
-        new_day["refeicoes"] = new_refeicoes
-        new_cardapio.append(new_day)
-
-    new_menu = dict(menu_data)
-    new_menu["cardapio"] = new_cardapio
-    return new_menu
-
-
-def _normalize_food_name(name: str) -> str:
-    return name.lower().strip()
-
-
-@lru_cache(maxsize=1)
-def _load_image_mapping() -> tuple[dict[str, str], list[str]]:
-    if not IMAGE_MAPPING_PATH.exists():
-        logger.warning(
-            "Mapping file not found. Using default image.",
-            extra={"path": str(IMAGE_MAPPING_PATH)},
-        )
-        return {}, []
-
-    try:
-        with IMAGE_MAPPING_PATH.open("r", encoding="utf-8") as f:
-            raw_mapping = json.load(f)
-    except (OSError, json.JSONDecodeError) as error:
-        logger.warning(
-            "Failed to read mapping file. Using default image.",
-            exc_info=error,
-        )
-        return {}, []
-
-    if not isinstance(raw_mapping, dict):
-        logger.warning(
-            "Invalid mapping format. Expected JSON object.",
-            extra={"path": str(IMAGE_MAPPING_PATH)},
-        )
-        return {}, []
-
-    mapping: dict[str, str] = {}
-    for key, value in raw_mapping.items():
-        if isinstance(key, str) and isinstance(value, str):
-            mapping[_normalize_food_name(key)] = value
-
-    keys_by_length = sorted(mapping.keys(), key=len, reverse=True)
-    return mapping, keys_by_length
-
-
-def _resolve_image_file_name(food_name: str) -> str:
-    mapping, keys_by_length = _load_image_mapping()
-    normalized = _normalize_food_name(food_name)
-
-    if not normalized:
-        return DEFAULT_IMAGE
-
-    exact = mapping.get(normalized)
-    if exact:
-        return exact
-
-    for key in keys_by_length:
-        if key and key in normalized:
-            return mapping[key]
-
-    return DEFAULT_IMAGE
-
-
-def map_image_from_json(food_name: str) -> str:
-    image_file_name = _resolve_image_file_name(food_name)
-    return (RELATIVE_IMAGES_DIR / image_file_name).as_posix()
 
 
 if __name__ == "__main__":
