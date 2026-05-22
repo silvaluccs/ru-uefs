@@ -6,3 +6,7 @@ temp/
 resources/
 .env
 backend/schemas/__pycache__/
+backend/__pycache__/main.cpython-313.pyc
+backend/api/__pycache__/route.cpython-313.pyc
+backend/config/__pycache__/database.cpython-313.pyc
+backend/services/__pycache__/menu_service.cpython-313.pyc
