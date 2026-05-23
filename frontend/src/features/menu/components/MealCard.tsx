@@ -15,27 +15,26 @@ import {
   CalendarDays,
 } from "lucide-react";
 
-interface SecaoRefeicao {
-  titulo: string;
-  itens: string[];
+interface MealSection {
+  title: string;
+  items: string[];
 }
 
 interface MealCardProps {
   title: string;
-  secoes?: SecaoRefeicao[];
+  sections?: MealSection[];
   isCurrent?: boolean;
-  isOpen?: boolean; // Nova propriedade para saber se o RU está aberto no momento
+  isOpen?: boolean;
 }
 
 export function MealCard({
   title,
-  secoes = [],
+  sections = [],
   isCurrent = false,
-  isOpen = false, // Padrão falso caso não seja enviado (ex: na tela semanal)
+  isOpen = false,
 }: MealCardProps) {
-  // Define o ícone e se a seção deve ter o destaque verde original do ovolactovegetariano
-  const getEstiloSecao = (titulo: string) => {
-    const t = titulo.toLowerCase();
+  const getSectionStyle = (sectionTitle: string) => {
+    const t = sectionTitle.toLowerCase();
 
     if (t.includes("vegetariana")) {
       return {
@@ -85,7 +84,6 @@ export function MealCard({
         highlight: false,
       };
     }
-
     if (t.includes("salada")) {
       return {
         icon: <Salad className="w-4 h-4 text-green-500" />,
@@ -93,14 +91,13 @@ export function MealCard({
       };
     }
 
-    // Sobremesas / Frutas
     return {
       icon: <Citrus className="w-4 h-4 text-red-500" />,
       highlight: false,
     };
   };
 
-  if (!secoes || secoes.length === 0) {
+  if (!sections || sections.length === 0) {
     return (
       <Card className="p-6 text-center text-gray-500 flex flex-col items-center justify-center min-h-[220px]">
         <HelpCircle className="w-8 h-8 text-gray-300 mb-2" />
@@ -114,7 +111,6 @@ export function MealCard({
 
   return (
     <Card className="relative overflow-hidden p-6 transition-all duration-300 bg-white border-gray-100 shadow-xs">
-      {/* Condicional do Badge Superior Direito */}
       {isCurrent &&
         (isOpen ? (
           <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 animate-pulse border border-blue-100">
@@ -134,25 +130,23 @@ export function MealCard({
       </h3>
 
       <div className="divide-y divide-gray-50">
-        {secoes.map((secao, index) => {
-          const { icon, highlight } = getEstiloSecao(secao.titulo);
+        {sections.map((section, index) => {
+          const { icon, highlight } = getSectionStyle(section.title);
 
           return (
             <div
               key={index}
               className="py-3.5 border-b border-gray-50 last:border-0 first:pt-0"
             >
-              {/* Cabeçalho da Seção com Ícone Colorido e Texto Neutro */}
               <div className="flex items-center gap-2 mb-1.5 text-gray-400">
                 {icon}
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                  {secao.titulo}
+                  {section.title}
                 </span>
               </div>
 
-              {/* Listagem de Alimentos Alinhados à Esquerda */}
               <ul className="space-y-1">
-                {secao.itens.map((item, itemIdx) => (
+                {section.items.map((item, itemIdx) => (
                   <li
                     key={itemIdx}
                     className={`text-sm leading-relaxed ${

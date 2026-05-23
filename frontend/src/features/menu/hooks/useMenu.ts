@@ -30,6 +30,6 @@ export function useCurrentMeal() {
   return useQuery({
     queryKey: menuKeys.now(),
     queryFn: menuService.getCurrentMeal,
-    staleTime: 1000 * 60 * 2, // Atualiza mais frequentemente (2 min)
+    staleTime: 1000 * 60 * 2,
   });
 }

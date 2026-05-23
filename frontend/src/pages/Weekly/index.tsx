@@ -5,76 +5,72 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { CalendarDays } from "lucide-react";
 
-interface SecaoRefeicao {
-  titulo: string;
-  itens: string[];
+interface MealSection {
+  title: string;
+  items: string[];
 }
 
-// HELPER: Converte os nós da API da UEFS nas seções flexíveis que o novo MealCard espera
-function adaptarRefeicaoDinamica(
-  dadosRefeicao: any,
-  tipo: "desjejum" | "almoco" | "jantar",
-): SecaoRefeicao[] {
-  if (!dadosRefeicao) return [];
+function adaptMealData(
+  mealData: any,
+  type: "desjejum" | "almoco" | "jantar",
+): MealSection[] {
+  if (!mealData) return [];
 
-  const limparLista = (itens: any): string[] => {
-    if (!itens) return [];
-    if (Array.isArray(itens)) return itens.filter(Boolean);
-    return [itens].filter(Boolean);
+  const cleanList = (items: any): string[] => {
+    if (!items) return [];
+    if (Array.isArray(items)) return items.filter(Boolean);
+    return [items].filter(Boolean);
   };
 
-  if (tipo === "desjejum" && dadosRefeicao.desjejum) {
-    const d = dadosRefeicao.desjejum;
+  if (type === "desjejum" && mealData.desjejum) {
+    const d = mealData.desjejum;
     return [
-      { titulo: "Pães / Carboidratos", itens: limparLista(d.pao) },
-      { titulo: "Raiz ou Farináceo", itens: limparLista(d.raiz_ou_farinaceio) },
+      { title: "Pães / Carboidratos", items: cleanList(d.pao) },
+      { title: "Raiz ou Farináceo", items: cleanList(d.raiz_ou_farinaceio) },
       {
-        titulo: "Opção Ovolactovegetariana",
-        itens: limparLista(d.ovolactovegetariano),
+        title: "Opção Ovolactovegetariana",
+        items: cleanList(d.ovolactovegetariano),
       },
-      { titulo: "Fruta", itens: limparLista(d.fruta) },
-      { titulo: "Bebidas", itens: d.bebida || [] },
-    ].filter((secao) => secao.itens.length > 0);
+      { title: "Fruta", items: cleanList(d.fruta) },
+      { title: "Bebidas", items: d.bebida || [] },
+    ].filter((section) => section.items.length > 0);
   }
 
-  if (tipo === "almoco" && dadosRefeicao.almoco) {
-    const a = dadosRefeicao.almoco;
+  if (type === "almoco" && mealData.almoco) {
+    const a = mealData.almoco;
     return [
       {
-        titulo: "Prato Principal",
-        itens: limparLista([a.proteina, a.opcao_proteina]),
+        title: "Prato Principal",
+        items: cleanList([a.proteina, a.opcao_proteina]),
       },
       {
-        titulo: "Acompanhamentos",
-        itens: limparLista([a.acompanhamento_I, a.acompanhamento_II]),
+        title: "Acompanhamentos",
+        items: cleanList([a.acompanhamento_I, a.acompanhamento_II]),
       },
-      { titulo: "Guarnição", itens: limparLista(a.guarnicao) },
+      { title: "Guarnição", items: cleanList(a.guarnicao) },
+      { title: "Saladas", items: cleanList([a.salada_crua, a.salada_cozida]) },
       {
-        titulo: "Saladas",
-        itens: limparLista([a.salada_crua, a.salada_cozida]),
+        title: "Opção Ovolactovegetariana",
+        items: a.ovolactovegetariano || [],
       },
-      {
-        titulo: "Opção Ovolactovegetariana",
-        itens: a.ovolactovegetariano || [],
-      },
-      { titulo: "Sobremesa", itens: limparLista(a.fruta) },
-      { titulo: "Suco", itens: limparLista(a.suco) },
-    ].filter((secao) => secao.itens.length > 0);
+      { title: "Sobremesa", items: cleanList(a.fruta) },
+      { title: "Suco", items: cleanList(a.suco) },
+    ].filter((section) => section.items.length > 0);
   }
 
-  if (tipo === "jantar" && dadosRefeicao.jantar) {
-    const j = dadosRefeicao.jantar;
+  if (type === "jantar" && mealData.jantar) {
+    const j = mealData.jantar;
     return [
-      { titulo: "Prato Principal / Proteína", itens: limparLista(j.proteina) },
-      { titulo: "Sopa", itens: limparLista(j.sopa) },
-      { titulo: "Raiz ou Farináceo", itens: limparLista(j.raiz_ou_farinaceio) },
-      { titulo: "Acompanhamentos", itens: limparLista(j.pao) },
+      { title: "Prato Principal / Proteína", items: cleanList(j.proteina) },
+      { title: "Sopa", items: cleanList(j.sopa) },
+      { title: "Raiz ou Farináceo", items: cleanList(j.raiz_ou_farinaceio) },
+      { title: "Acompanhamentos", items: cleanList(j.pao) },
       {
-        titulo: "Opção Ovolactovegetariana",
-        itens: j.ovolactovegetariano || [],
+        title: "Opção Ovolactovegetariana",
+        items: j.ovolactovegetariano || [],
       },
-      { titulo: "Bebidas", itens: j.bebida || [] },
-    ].filter((secao) => secao.itens.length > 0);
+      { title: "Bebidas", items: j.bebida || [] },
+    ].filter((section) => section.items.length > 0);
   }
 
   return [];
@@ -105,9 +101,9 @@ export function WeeklyPage() {
     );
   }
 
-  const listaDias = weeklyData?.cardapio;
+  const dayList = weeklyData?.cardapio;
 
-  if (!listaDias || !Array.isArray(listaDias) || listaDias.length === 0) {
+  if (!dayList || !Array.isArray(dayList) || dayList.length === 0) {
     return (
       <EmptyState
         title="Nenhum cardápio cadastrado"
@@ -118,7 +114,6 @@ export function WeeklyPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
-      {/* Topo da página */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 border-b border-gray-100 pb-4">
         <div>
           <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider block mb-0.5">
@@ -136,17 +131,15 @@ export function WeeklyPage() {
         )}
       </div>
 
-      {/* Listagem dos Dias */}
       <div className="space-y-12">
-        {listaDias.map((day: any, dayIndex: number) => {
-          const refeicaoDoDia = day.refeicoes?.[0];
+        {dayList.map((day: any, dayIndex: number) => {
+          const dayMealData = day.refeicoes?.[0];
 
           return (
             <div
               key={dayIndex}
               className="space-y-4 border-b border-gray-100 pb-10 last:border-0 last:pb-0"
             >
-              {/* Título do Dia da Semana */}
               <div className="flex items-baseline gap-2">
                 <h2 className="text-lg font-bold text-gray-800">{day.dia}</h2>
                 <span className="text-xs font-medium text-gray-400">
@@ -154,19 +147,18 @@ export function WeeklyPage() {
                 </span>
               </div>
 
-              {/* Cards de Refeição Dinâmicos */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <MealCard
                   title="Café da Manhã"
-                  secoes={adaptarRefeicaoDinamica(refeicaoDoDia, "desjejum")}
+                  sections={adaptMealData(dayMealData, "desjejum")}
                 />
                 <MealCard
                   title="Almoço"
-                  secoes={adaptarRefeicaoDinamica(refeicaoDoDia, "almoco")}
+                  sections={adaptMealData(dayMealData, "almoco")}
                 />
                 <MealCard
                   title="Jantar"
-                  secoes={adaptarRefeicaoDinamica(refeicaoDoDia, "jantar")}
+                  sections={adaptMealData(dayMealData, "jantar")}
                 />
               </div>
             </div>
