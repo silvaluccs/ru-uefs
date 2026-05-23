@@ -23,13 +23,11 @@ export function WakingUpState() {
   return (
     <div className="max-w-md mx-auto min-h-[60vh] flex flex-col items-center justify-center p-6 text-center space-y-6 animate-fade-in">
       <div className="relative flex items-center justify-center">
-        {/* Círculo externo girando suavemente */}
         <div
           className="absolute w-20 h-20 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"
           style={{ animationDuration: "1.5s" }}
         />
 
-        {/* Ícone central com pulso sutil */}
         <div className="p-4 bg-blue-50 text-blue-600 rounded-2xl animate-pulse">
           <Utensils className="w-8 h-8" />
         </div>
@@ -37,7 +35,7 @@ export function WakingUpState() {
 
       <div className="space-y-2 max-w-[280px]">
         <h3 className="text-lg font-bold text-gray-900 tracking-tight flex items-center justify-center gap-2">
-          <span>O restaurante está abrindo</span>
+          <span>O Servidor está acordando</span>
         </h3>
         <p className="text-sm text-gray-500 min-h-[40px] transition-all duration-300">
           {FRASES_DIVERTIDAS[fraseIndex]}
