@@ -3,6 +3,7 @@ import { MealCard } from "@/features/menu/components/MealCard";
 import { MealSkeleton } from "@/features/menu/components/MealSkeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { WakingUpState } from "@/components/feedback/WakingUpState"; // Novo componente adicionado
 import { CalendarDays } from "lucide-react";
 
 interface MealSection {
@@ -80,16 +81,7 @@ export function WeeklyPage() {
   const { data: weeklyData, isLoading, isError, refetch } = useWeeklyMenu();
 
   if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-5xl mx-auto animate-fade-in pt-4">
-        <div className="h-6 w-48 bg-gray-100 rounded animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <MealSkeleton />
-          <MealSkeleton />
-          <MealSkeleton />
-        </div>
-      </div>
-    );
+    return <WakingUpState />;
   }
 
   if (isError) {

@@ -5,6 +5,7 @@ import { MealCard } from "@/features/menu/components/MealCard";
 import { MealSkeleton } from "@/features/menu/components/MealSkeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { WakingUpState } from "@/components/feedback/WakingUpState"; // Novo componente adicionado
 import { Calendar, Clock, Info } from "lucide-react";
 import type { MealType } from "@/types/menu";
 
@@ -189,12 +190,9 @@ export function HomePage() {
       ? currentMeal.mealType
       : restaurantStatus.defaultMeal);
 
+  // Aqui substituímos o esqueleto antigo para renderizar a sua nova tela divertida de carregamento
   if (isLoadingMenu) {
-    return (
-      <div className="space-y-6 max-w-md mx-auto pt-4">
-        <MealSkeleton />
-      </div>
-    );
+    return <WakingUpState />;
   }
 
   if (isErrorMenu) {
