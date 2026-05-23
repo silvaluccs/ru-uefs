@@ -5,8 +5,8 @@ import { cn } from "@/utils/cn";
 export function MainLayout() {
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col antialiased">
-      <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto max-w-5xl h-16 px-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md h-auto">
+        <div className="mx-auto max-w-5xl min-h-[4rem] sm:h-16 px-4 pt-3 pb-2 sm:py-0 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
               <Utensils className="w-5 h-5" />

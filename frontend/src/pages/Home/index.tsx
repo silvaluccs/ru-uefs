@@ -8,148 +8,155 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { Calendar, Clock, Info } from "lucide-react";
 import type { MealType } from "@/types/menu";
 
-interface SecaoRefeicao {
-  titulo: string;
-  itens: string[];
+interface MealSection {
+  title: string;
+  items: string[];
 }
 
-interface StatusRestaurante {
-  estaAberto: boolean;
-  refeicaoPredefinida: MealType;
-  badgeTexto: string;
+interface RestaurantStatus {
+  isOpen: boolean;
+  isLastServed: boolean;
+  defaultMeal: MealType;
+  badgeText: string;
 }
 
-function obterStatusErefeicaoAtual(): StatusRestaurante {
-  const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-  const horas = agora.getHours();
-  const minutos = agora.getMinutes();
-  const tempoEmMinutos = horas * 60 + minutos;
+function getCurrentRestaurantStatus(): RestaurantStatus {
+  const now = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }),
+  );
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const timeInMinutes = hours * 60 + minutes;
 
-  const inicioCafé = 6 * 60 + 30;
-  const fimCafé = 9 * 60;
+  const breakfastStart = 6 * 60 + 30;
+  const breakfastEnd = 9 * 60;
 
-  const inicioAlmoco = 11 * 60;
-  const fimAlmoco = 14 * 60 + 30;
+  const lunchStart = 11 * 60;
+  const lunchEnd = 14 * 60 + 30;
 
-  const inicioJantar = 17 * 60 + 30;
-  const fimJantar = 19 * 60 + 30;
+  const dinnerStart = 17 * 60 + 30;
+  const dinnerEnd = 19 * 60 + 30;
 
-  if (tempoEmMinutos >= 0 && tempoEmMinutos < fimCafé) {
-    if (tempoEmMinutos >= inicioCafé) {
+  if (timeInMinutes >= 0 && timeInMinutes < breakfastEnd) {
+    if (timeInMinutes >= breakfastStart) {
       return {
-        estaAberto: true,
-        refeicaoPredefinida: "breakfast",
-        badgeTexto: "Café da manhã até 09:00",
+        isOpen: true,
+        isLastServed: false,
+        defaultMeal: "breakfast",
+        badgeText: "Café da manhã até 09:00",
       };
     }
     return {
-      estaAberto: false,
-      refeicaoPredefinida: "breakfast",
-      badgeTexto: "Abre às 06:30 (Café da Manhã)",
+      isOpen: false,
+      isLastServed: false,
+      defaultMeal: "breakfast",
+      badgeText: "Abre às 06:30 (Café da Manhã)",
     };
   }
 
-  if (tempoEmMinutos >= fimCafé && tempoEmMinutos < fimAlmoco) {
-    if (tempoEmMinutos >= inicioAlmoco) {
+  if (timeInMinutes >= breakfastEnd && timeInMinutes < lunchEnd) {
+    if (timeInMinutes >= lunchStart) {
       return {
-        estaAberto: true,
-        refeicaoPredefinida: "lunch",
-        badgeTexto: "Almoço até 14:30",
+        isOpen: true,
+        isLastServed: false,
+        defaultMeal: "lunch",
+        badgeText: "Almoço até 14:30",
       };
     }
     return {
-      estaAberto: false,
-      refeicaoPredefinida: "lunch",
-      badgeTexto: "Abre às 11:00 (Almoço)",
+      isOpen: false,
+      isLastServed: false,
+      defaultMeal: "lunch",
+      badgeText: "Abre às 11:00 (Almoço)",
     };
   }
 
-  if (tempoEmMinutos >= fimAlmoco && tempoEmMinutos < fimJantar) {
-    if (tempoEmMinutos >= inicioJantar) {
+  if (timeInMinutes >= lunchEnd && timeInMinutes < dinnerEnd) {
+    if (timeInMinutes >= dinnerStart) {
       return {
-        estaAberto: true,
-        refeicaoPredefinida: "dinner",
-        badgeTexto: "Jantar até 19:30",
+        isOpen: true,
+        isLastServed: false,
+        defaultMeal: "dinner",
+        badgeText: "Jantar até 19:30",
       };
     }
     return {
-      estaAberto: false,
-      refeicaoPredefinida: "dinner",
-      badgeTexto: "Abre às 17:30 (Jantar)",
+      isOpen: false,
+      isLastServed: false,
+      defaultMeal: "dinner",
+      badgeText: "Abre às 17:30 (Jantar)",
     };
   }
 
   return {
-    estaAberto: false,
-    refeicaoPredefinida: "breakfast",
-    badgeTexto: "Abre amanhã às 06:30",
+    isOpen: false,
+    isLastServed: true,
+    defaultMeal: "dinner",
+    badgeText: "Última refeição servida",
   };
 }
 
-function adaptarRefeicaoDinamica(
-  dadosRefeicao: any,
-  tipo: "desjejum" | "almoco" | "jantar",
-): SecaoRefeicao[] {
-  if (!dadosRefeicao) return [];
+function adaptMealData(
+  mealData: any,
+  type: "desjejum" | "almoco" | "jantar",
+): MealSection[] {
+  if (!mealData) return [];
 
-  const limparLista = (itens: any): string[] => {
-    if (!itens) return [];
-    if (Array.isArray(itens)) return itens.filter(Boolean);
-    return [itens].filter(Boolean);
+  const cleanList = (items: any): string[] => {
+    if (!items) return [];
+    if (Array.isArray(items)) return items.filter(Boolean);
+    return [items].filter(Boolean);
   };
 
-  if (tipo === "desjejum" && dadosRefeicao.desjejum) {
-    const d = dadosRefeicao.desjejum;
+  if (type === "desjejum" && mealData.desjejum) {
+    const d = mealData.desjejum;
     return [
-      { titulo: "Pães / Carboidratos", itens: limparLista(d.pao) },
-      { titulo: "Raiz ou Farináceo", itens: limparLista(d.raiz_ou_farinaceio) },
+      { title: "Pães / Carboidratos", items: cleanList(d.pao) },
+      { title: "Raiz ou Farináceo", items: cleanList(d.raiz_ou_farinaceio) },
       {
-        titulo: "Opção Ovolactovegetariana",
-        itens: limparLista(d.ovolactovegetariano),
+        title: "Opção Ovolactovegetariana",
+        items: cleanList(d.ovolactovegetariano),
       },
-      { titulo: "Fruta", itens: limparLista(d.fruta) },
-      { titulo: "Bebidas", itens: d.bebida || [] },
-    ].filter((secao) => secao.itens.length > 0);
+      { title: "Fruta", items: cleanList(d.fruta) },
+      { title: "Bebidas", items: d.bebida || [] },
+    ].filter((section) => section.items.length > 0);
   }
 
-  if (tipo === "almoco" && dadosRefeicao.almoco) {
-    const a = dadosRefeicao.almoco;
+  if (type === "almoco" && mealData.almoco) {
+    const a = mealData.almoco;
     return [
       {
-        titulo: "Prato Principal",
-        itens: limparLista([a.proteina, a.opcao_proteina]),
+        title: "Prato Principal",
+        items: cleanList([a.proteina, a.opcao_proteina]),
       },
       {
-        titulo: "Acompanhamentos",
-        itens: limparLista([a.acompanhamento_I, a.acompanhamento_II]),
+        title: "Acompanhamentos",
+        items: cleanList([a.acompanhamento_I, a.acompanhamento_II]),
       },
-      { titulo: "Guarnição", itens: limparLista(a.guarnicao) },
+      { title: "Guarnição", items: cleanList(a.guarnicao) },
+      { title: "Saladas", items: cleanList([a.salada_crua, a.salada_cozida]) },
       {
-        titulo: "Saladas",
-        itens: limparLista([a.salada_crua, a.salada_cozida]),
+        title: "Opção Ovolactovegetariana",
+        items: a.ovolactovegetariano || [],
       },
-      {
-        titulo: "Opção Ovolactovegetariana",
-        itens: a.ovolactovegetariano || [],
-      },
-      { titulo: "Sobremesa", itens: limparLista(a.fruta) },
-      { titulo: "Suco", itens: limparLista(a.suco) },
-    ].filter((secao) => secao.itens.length > 0);
+      { title: "Sobremesa", items: cleanList(a.fruta) },
+      { title: "Suco", items: cleanList(a.suco) },
+    ].filter((section) => section.items.length > 0);
   }
 
-  if (tipo === "jantar" && dadosRefeicao.jantar) {
-    const j = dadosRefeicao.jantar;
+  if (type === "jantar" && mealData.jantar) {
+    const j = mealData.jantar;
     return [
-      { titulo: "Prato Principal / Proteína", itens: limparLista(j.proteina) },
-      { titulo: "Sopa", itens: limparLista(j.sopa) },
-      { titulo: "Raiz ou Farináceo", itens: limparLista(j.raiz_ou_farinaceio) },
-      { titulo: "Acompanhamentos", itens: limparLista(j.pao) },
+      { title: "Prato Principal / Proteína", items: cleanList(j.proteina) },
+      { title: "Sopa", items: cleanList(j.sopa) },
+      { title: "Raiz ou Farináceo", items: cleanList(j.raiz_ou_farinaceio) },
+      { title: "Acompanhamentos", items: cleanList(j.pao) },
       {
-        titulo: "Opção Ovolactovegetariana",
-        itens: j.ovolactovegetariano || [],
+        title: "Opção Ovolactovegetariana",
+        items: j.ovolactovegetariano || [],
       },
-      { titulo: "Bebidas", itens: j.bebida || [] },
-    ].filter((secao) => secao.itens.length > 0);
+      { title: "Bebidas", items: j.bebida || [] },
+    ].filter((section) => section.items.length > 0);
   }
 
   return [];
@@ -165,22 +172,22 @@ export function HomePage() {
   const { data: currentMeal } = useCurrentMeal();
 
   const [selectedTab, setSelectedTab] = useState<MealType | null>(null);
-  const [statusRu, setStatusRu] = useState<StatusRestaurante>(
-    obterStatusErefeicaoAtual(),
+  const [restaurantStatus, setRestaurantStatus] = useState<RestaurantStatus>(
+    getCurrentRestaurantStatus(),
   );
 
   useEffect(() => {
-    const intervalo = setInterval(() => {
-      setStatusRu(obterStatusErefeicaoAtual());
+    const interval = setInterval(() => {
+      setRestaurantStatus(getCurrentRestaurantStatus());
     }, 60000);
-    return () => clearInterval(intervalo);
+    return () => clearInterval(interval);
   }, []);
 
   const activeTab: MealType =
     selectedTab ??
     (currentMeal?.isActive
       ? currentMeal.mealType
-      : statusRu.refeicaoPredefinida);
+      : restaurantStatus.defaultMeal);
 
   if (isLoadingMenu) {
     return (
@@ -208,7 +215,7 @@ export function HomePage() {
     );
   }
 
-  const dadosTermo = todayMenu.refeicoes[0];
+  const dayData = todayMenu.refeicoes[0];
 
   const tabTitles: Record<MealType, string> = {
     breakfast: "Café da Manhã",
@@ -216,7 +223,7 @@ export function HomePage() {
     dinner: "Jantar Completo",
   };
 
-  const tipoApi =
+  const apiType =
     activeTab === "breakfast"
       ? "desjejum"
       : activeTab === "lunch"
@@ -225,9 +232,7 @@ export function HomePage() {
 
   return (
     <div className="max-w-md mx-auto space-y-5 flex flex-col min-h-[calc(100vh-80px)] animate-fade-in">
-      {/* Conteúdo Principal */}
       <div className="flex-1 space-y-5">
-        {/* Cabeçalho da Página */}
         <div className="flex items-center justify-between">
           <div>
             <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider block mb-0.5">
@@ -243,42 +248,40 @@ export function HomePage() {
           </div>
         </div>
 
-        {/* Badge de Status */}
         <div className="flex justify-center pt-1">
           <div
-            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold shadow-xs border transition-all duration-300 ${statusRu.estaAberto
+            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold shadow-xs border transition-all duration-300 ${
+              restaurantStatus.isOpen
                 ? "bg-emerald-50 border-emerald-100 text-emerald-700"
                 : "bg-amber-50 border-amber-100 text-red-700"
-              }`}
+            }`}
           >
             <span
-              className={`w-2 h-2 rounded-full ${statusRu.estaAberto ? "bg-emerald-500" : "bg-red-500"} animate-pulse`}
+              className={`w-2 h-2 rounded-full ${restaurantStatus.isOpen ? "bg-emerald-500" : "bg-red-500"} animate-pulse`}
               style={{ animationDuration: "2s" }}
             />
             <span>
-              {statusRu.estaAberto ? "Aberto agora: " : "Fechado: "}{" "}
-              {statusRu.badgeTexto}
+              {restaurantStatus.isOpen ? "Aberto agora: " : "Fechado: "}{" "}
+              {restaurantStatus.badgeText}
             </span>
           </div>
         </div>
 
-        {/* Abas */}
         <MealTabs activeTab={activeTab} onChangeTab={setSelectedTab} />
 
-        {/* Card Principal */}
         <MealCard
           title={tabTitles[activeTab]}
-          secoes={adaptarRefeicaoDinamica(dadosTermo, tipoApi)}
+          sections={adaptMealData(dayData, apiType)}
           isCurrent={
             currentMeal?.isActive
               ? currentMeal.mealType === activeTab
-              : statusRu.refeicaoPredefinida === activeTab
+              : restaurantStatus.defaultMeal === activeTab
           }
-          isOpen={statusRu.estaAberto}
+          isOpen={restaurantStatus.isOpen}
+          isLastServed={restaurantStatus.isLastServed}
         />
       </div>
 
-      {/* Rodapé Independente Informativo e de Portfólio */}
       <footer className="pt-6 pb-2 border-t border-gray-100 text-center space-y-3 mt-auto">
         <div className="flex items-start gap-2 bg-slate-50 text-slate-600 text-left p-3 rounded-lg border border-slate-100/80">
           <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
@@ -293,7 +296,6 @@ export function HomePage() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 text-xs text-gray-400 font-medium">
           <span>Desenvolvido por Lucas Silva</span>
           <div className="flex items-center gap-4">
-            {/* Link do LinkedIn com SVG Nativo */}
             <a
               href="https://linkedin.com/in/silvaluccs"
               target="_blank"
@@ -306,7 +308,6 @@ export function HomePage() {
               <span>@silvaluccs</span>
             </a>
 
-            {/* Link do GitHub com SVG Nativo */}
             <a
               href="https://github.com/silvaluccs"
               target="_blank"
