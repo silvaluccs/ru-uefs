@@ -15,6 +15,7 @@ interface MealSection {
 
 interface RestaurantStatus {
   isOpen: boolean;
+  isLastServed: boolean;
   defaultMeal: MealType;
   badgeText: string;
 }
@@ -40,12 +41,14 @@ function getCurrentRestaurantStatus(): RestaurantStatus {
     if (timeInMinutes >= breakfastStart) {
       return {
         isOpen: true,
+        isLastServed: false,
         defaultMeal: "breakfast",
         badgeText: "Café da manhã até 09:00",
       };
     }
     return {
       isOpen: false,
+      isLastServed: false,
       defaultMeal: "breakfast",
       badgeText: "Abre às 06:30 (Café da Manhã)",
     };
@@ -55,12 +58,14 @@ function getCurrentRestaurantStatus(): RestaurantStatus {
     if (timeInMinutes >= lunchStart) {
       return {
         isOpen: true,
+        isLastServed: false,
         defaultMeal: "lunch",
         badgeText: "Almoço até 14:30",
       };
     }
     return {
       isOpen: false,
+      isLastServed: false,
       defaultMeal: "lunch",
       badgeText: "Abre às 11:00 (Almoço)",
     };
@@ -70,12 +75,14 @@ function getCurrentRestaurantStatus(): RestaurantStatus {
     if (timeInMinutes >= dinnerStart) {
       return {
         isOpen: true,
+        isLastServed: false,
         defaultMeal: "dinner",
         badgeText: "Jantar até 19:30",
       };
     }
     return {
       isOpen: false,
+      isLastServed: false,
       defaultMeal: "dinner",
       badgeText: "Abre às 17:30 (Jantar)",
     };
@@ -83,8 +90,9 @@ function getCurrentRestaurantStatus(): RestaurantStatus {
 
   return {
     isOpen: false,
-    defaultMeal: "breakfast",
-    badgeText: "Abre amanhã às 06:30",
+    isLastServed: true,
+    defaultMeal: "dinner",
+    badgeText: "Última refeição servida",
   };
 }
 
@@ -270,6 +278,7 @@ export function HomePage() {
               : restaurantStatus.defaultMeal === activeTab
           }
           isOpen={restaurantStatus.isOpen}
+          isLastServed={restaurantStatus.isLastServed}
         />
       </div>
 

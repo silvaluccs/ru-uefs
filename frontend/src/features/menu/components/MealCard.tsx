@@ -13,6 +13,7 @@ import {
   Vegan,
   CookingPot,
   CalendarDays,
+  History,
 } from "lucide-react";
 
 interface MealSection {
@@ -25,6 +26,7 @@ interface MealCardProps {
   sections?: MealSection[];
   isCurrent?: boolean;
   isOpen?: boolean;
+  isLastServed?: boolean;
 }
 
 export function MealCard({
@@ -32,6 +34,7 @@ export function MealCard({
   sections = [],
   isCurrent = false,
   isOpen = false,
+  isLastServed = false,
 }: MealCardProps) {
   const getSectionStyle = (sectionTitle: string) => {
     const t = sectionTitle.toLowerCase();
@@ -111,18 +114,26 @@ export function MealCard({
 
   return (
     <Card className="relative overflow-hidden p-6 transition-all duration-300 bg-white border-gray-100 shadow-xs">
-      {isCurrent &&
-        (isOpen ? (
-          <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 animate-pulse border border-blue-100">
-            <Sparkles className="w-3 h-3" />
-            Servindo agora
-          </span>
-        ) : (
-          <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
-            <CalendarDays className="w-3.5 h-3.5" />
-            Vai servir
-          </span>
-        ))}
+      {isCurrent && isOpen && (
+        <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 animate-pulse border border-blue-100">
+          <Sparkles className="w-3 h-3" />
+          Servindo agora
+        </span>
+      )}
+
+      {isCurrent && !isOpen && isLastServed && (
+        <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+          <History className="w-3.5 h-3.5" />
+          Última refeição servida
+        </span>
+      )}
+
+      {isCurrent && !isOpen && !isLastServed && (
+        <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+          <CalendarDays className="w-3.5 h-3.5" />
+          Vai servir
+        </span>
+      )}
 
       <h3 className="text-lg font-bold text-gray-900 mb-4 tracking-tight flex items-center gap-2">
         <ChefHat className="w-4 h-4 text-gray-400" />
