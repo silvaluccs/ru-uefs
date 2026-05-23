@@ -15,6 +15,8 @@ export function useWeeklyMenu() {
     queryFn: menuService.getWeeklyMenu,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
+    retry: 5,
+    retryDelay: 2000,
   });
 }
 
@@ -23,6 +25,8 @@ export function useTodayMenu() {
     queryKey: menuKeys.today(),
     queryFn: menuService.getTodayMenu,
     staleTime: 1000 * 60 * 5,
+    retry: 5,
+    retryDelay: 2000,
   });
 }
 
@@ -31,5 +35,7 @@ export function useCurrentMeal() {
     queryKey: menuKeys.now(),
     queryFn: menuService.getCurrentMeal,
     staleTime: 1000 * 60 * 2,
+    retry: 5,
+    retryDelay: 2000,
   });
 }
