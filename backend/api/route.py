@@ -16,12 +16,8 @@ router = APIRouter(prefix="/api/v1/menu", tags=["Menu"])
 async def get_current_week_menu(
     collection: AsyncCollection = Depends(get_menu_collection),
 ):
-    menu = await fetch_current_week_menu(collection)
-    if not menu:
-        raise HTTPException(
-            status_code=404, detail="Nenhum cardápio disponível no momento."
-        )
-    return menu
+
+    return await fetch_current_week_menu(collection)
 
 
 @router.get("/today")

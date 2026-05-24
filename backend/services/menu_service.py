@@ -38,7 +38,16 @@ async def fetch_current_week_menu(collection: AsyncCollection) -> dict:
     if not latest_menu:
         return {}
     latest_menu["_id"] = str(latest_menu["_id"])
-    return latest_menu
+
+    today = datetime.now().date()
+
+    start_day_menu = latest_menu["data_inicio"]
+    end_day_menu = latest_menu["data_fim"]
+
+    start_date = datetime.strptime(start_day_menu, "%d/%m/%Y").date()
+    end_date = datetime.strptime(end_day_menu, "%d/%m/%Y").date()
+
+    return latest_menu if start_date <= today <= end_date else {}
 
 
 async def fetch_today_menu(collection: AsyncCollection) -> dict:
@@ -74,7 +83,6 @@ async def fetch_menu_for_now(collection: AsyncCollection) -> dict:
         return {}
 
     now = datetime.now(FUSO_BAHIA)
-    meal_key = get_current_meal(now.time(), now.weekday())
 
     if not meal_key:
         return {"message": "Restaurante fechado no momento."}
