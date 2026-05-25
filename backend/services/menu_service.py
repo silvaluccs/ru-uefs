@@ -84,6 +84,8 @@ async def fetch_menu_for_now(collection: AsyncCollection) -> dict:
 
     now = datetime.now(FUSO_BAHIA)
 
+    meal_key = get_current_meal(now.time(), now.weekday())
+
     if not meal_key:
         return {"message": "Restaurante fechado no momento."}
 
