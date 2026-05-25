@@ -6,6 +6,7 @@ class DesjejumSchema(BaseModel):
     fim: str = "08:00"
     bebida: list[str]
     pao: str
+    proteina: str
     raiz_ou_farinaceio: str
     fruta: str
     ovolactovegetariano: str

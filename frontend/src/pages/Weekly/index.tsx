@@ -27,6 +27,7 @@ function adaptMealData(
     const d = mealData.desjejum;
     return [
       { title: "Pães / Carboidratos", items: cleanList(d.pao) },
+      { title: "Proteína", items: cleanList(d.proteina) },
       { title: "Raiz ou Farináceo", items: cleanList(d.raiz_ou_farinaceio) },
       {
         title: "Opção Ovolactovegetariana",

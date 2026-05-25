@@ -2,6 +2,7 @@ export interface RefeicaoDia {
   desjejum: {
     bebida: string[];
     pao: string;
+    proteina: string;
     raiz_ou_farinaceio: string;
     fruta: string;
     ovolactovegetariano: string;
