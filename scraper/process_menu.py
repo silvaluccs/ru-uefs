@@ -145,6 +145,9 @@ def process_to_json() -> None:
 
         json_final = json.loads(response.text)
 
+        with open("cardapio.json", "w", encoding="utf-8") as f:
+            json.dump(json_final, f, ensure_ascii=False, indent=2)
+
         date_start = json_final.get("data_inicio")
         date_end = json_final.get("data_fim")
         if not date_start or not date_end:
