@@ -39,7 +39,7 @@ async def fetch_current_week_menu(collection: AsyncCollection) -> dict:
         return {}
     latest_menu["_id"] = str(latest_menu["_id"])
 
-    today = datetime.now().date()
+    today = datetime.now(FUSO_BAHIA).date()
 
     start_day_menu = latest_menu["data_inicio"]
     end_day_menu = latest_menu["data_fim"]
@@ -51,7 +51,7 @@ async def fetch_current_week_menu(collection: AsyncCollection) -> dict:
 
 
 async def fetch_today_menu(collection: AsyncCollection) -> dict:
-    today = datetime.now().date().strftime("%d/%m/%Y")
+    today = datetime.now(FUSO_BAHIA).date().strftime("%d/%m/%Y")
     return await fetch_menu_for_date(collection, today)
 
 
