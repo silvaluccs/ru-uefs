@@ -13,8 +13,28 @@ export function MealTabs({ activeTab, onChangeTab }: MealTabsProps) {
     { id: "dinner", label: "Jantar" },
   ];
 
+  const getTranslateClass = (tab: MealType) => {
+    switch (tab) {
+      case "breakfast":
+        return "translate-x-0";
+      case "lunch":
+        return "translate-x-full";
+      case "dinner":
+        return "translate-x-[200%]";
+      default:
+        return "translate-x-0";
+    }
+  };
+
   return (
-    <div className="flex border-b border-gray-100 w-full mb-6">
+    <div className="relative flex bg-gray-50/60 dark:bg-zinc-900/60 p-1 rounded-xl border border-gray-100 dark:border-zinc-800/80 w-full mb-6 transition-colors duration-300">
+      <div
+        className={cn(
+          "absolute top-1 bottom-1 left-1 w-[calc(33.3333%-4px)] rounded-lg bg-white dark:bg-zinc-800 shadow-xs border border-gray-100 dark:border-zinc-700/50 transition-transform duration-300 ease-out",
+          getTranslateClass(activeTab),
+        )}
+      />
+
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -22,10 +42,10 @@ export function MealTabs({ activeTab, onChangeTab }: MealTabsProps) {
             key={tab.id}
             onClick={() => onChangeTab(tab.id)}
             className={cn(
-              "flex-1 text-center py-3 text-sm font-medium border-b-2 transition-all duration-200 relative -mb-[2px]",
+              "flex-1 text-center py-2.5 text-sm font-medium rounded-lg transition-colors duration-300 select-none relative z-10",
               isActive
-                ? "border-blue-600 text-blue-600 font-semibold"
-                : "border-transparent text-gray-400 hover:text-gray-600",
+                ? "text-blue-600 dark:text-blue-400 font-semibold"
+                : "text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300",
             )}
           >
             {tab.label}

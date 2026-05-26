@@ -3,7 +3,7 @@ import { MealCard } from "@/features/menu/components/MealCard";
 import { MealSkeleton } from "@/features/menu/components/MealSkeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
-import { WakingUpState } from "@/components/feedback/WakingUpState"; // Novo componente adicionado
+import { WakingUpState } from "@/components/feedback/WakingUpState";
 import { CalendarDays } from "lucide-react";
 
 interface MealSection {
@@ -107,18 +107,18 @@ export function WeeklyPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 border-b border-gray-100 pb-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 border-b border-gray-100 dark:border-zinc-800 pb-4">
         <div>
-          <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider block mb-0.5">
+          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-0.5">
             Cronograma Semanal
           </span>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <CalendarDays className="w-6 h-6 text-gray-400" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100 tracking-tight flex items-center gap-2">
+            <CalendarDays className="w-6 h-6 text-gray-400 dark:text-zinc-500" />
             Cardápio da Semana
           </h1>
         </div>
         {weeklyData.data_inicio && weeklyData.data_fim && (
-          <span className="text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100 self-start md:self-auto">
+          <span className="text-xs font-medium text-gray-500 dark:text-zinc-400 bg-gray-50 dark:bg-zinc-900 px-3 py-1.5 rounded-md border border-gray-100 dark:border-zinc-800 self-start md:self-auto transition-colors duration-200">
             Vigência: {weeklyData.data_inicio} até {weeklyData.data_fim}
           </span>
         )}
@@ -131,11 +131,13 @@ export function WeeklyPage() {
           return (
             <div
               key={dayIndex}
-              className="space-y-4 border-b border-gray-100 pb-10 last:border-0 last:pb-0"
+              className="space-y-4 border-b border-gray-100 dark:border-zinc-800 pb-10 last:border-0 last:pb-0"
             >
               <div className="flex items-baseline gap-2">
-                <h2 className="text-lg font-bold text-gray-800">{day.dia}</h2>
-                <span className="text-xs font-medium text-gray-400">
+                <h2 className="text-lg font-bold text-gray-800 dark:text-zinc-200">
+                  {day.dia}
+                </h2>
+                <span className="text-xs font-medium text-gray-400 dark:text-zinc-500">
                   • {day.data}
                 </span>
               </div>
