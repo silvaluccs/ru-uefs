@@ -137,7 +137,7 @@ export function WeeklyPage() {
                 <h2 className="text-lg font-bold text-gray-800 dark:text-zinc-200">
                   {day.dia}
                 </h2>
-                <span className="text-xs font-medium text-gray-400 dark:text-zinc-500">
+                <span className="text-xs font-medium text-gray-400 dark:text-zinc-400">
                   • {day.data}
                 </span>
               </div>
