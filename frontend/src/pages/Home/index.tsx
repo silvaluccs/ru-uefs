@@ -5,10 +5,9 @@ import { MealCard } from "@/features/menu/components/MealCard";
 import { MealSkeleton } from "@/features/menu/components/MealSkeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
-import { WakingUpState } from "@/components/feedback/WakingUpState"; 
+import { WakingUpState } from "@/components/feedback/WakingUpState";
 import { Calendar, Clock, Info } from "lucide-react";
 import type { MealType } from "@/types/menu";
-import confetti from "canvas-confetti"; // 1. Importa o canvas-confetti
 
 interface MealSection {
   title: string;
@@ -185,26 +184,6 @@ export function HomePage() {
     }, 60000);
     return () => clearInterval(interval);
   }, []);
-
-  // 2. useEffect para disparar o confete apenas uma vez por sessão (ao carregar os dados)
-  useEffect(() => {
-    // Só executa se o menu terminou de carregar, não deu erro e os dados existem
-    if (!isLoadingMenu && !isErrorMenu && todayMenu && todayMenu.refeicoes?.length > 0) {
-      const jaDisparou = sessionStorage.getItem("confete_exibido");
-
-      if (!jaDisparou) {
-        confetti({
-          particleCount: 120,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ["#2563eb", "#10b981", "#f59e0b", "#3b82f6"] // Cores customizadas combinando com o app
-        });
-        
-        // Salva na sessão para não repetir se ele mudar de aba ou atualizar o estado interno
-        sessionStorage.setItem("confete_exibido", "true");
-      }
-    }
-  }, [isLoadingMenu, isErrorMenu, todayMenu]);
 
   const activeTab: MealType =
     selectedTab ??
