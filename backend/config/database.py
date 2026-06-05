@@ -3,6 +3,7 @@ from urllib.parse import quote_plus
 
 from dotenv import load_dotenv
 from pymongo import AsyncMongoClient
+from pymongo.asynchronous.collection import AsyncCollection
 
 _db_client: AsyncMongoClient | None = None
 
@@ -44,3 +45,9 @@ async def close_db_client() -> None:
     if _db_client is not None:
         await _db_client.close()
         _db_client = None
+
+
+def get_evaluation_collection() -> AsyncCollection:
+    client = get_db_client()
+    db_name = os.getenv("MONGO_INITDB_DATABASE") or "ru_uefs"
+    return client[db_name]["evaluations"]

@@ -2,12 +2,12 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from backend.api.evaluation_route import router as evaluation_router
+from backend.api.route import router as menu_router
+from backend.config.database import close_db_client, get_db_client
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
-from backend.api.route import router as menu_router
-from backend.config.database import close_db_client, get_db_client
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -36,7 +36,6 @@ app = FastAPI(
 )
 
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,3 +53,4 @@ else:
     )
 
 app.include_router(menu_router)
+app.include_router(evaluation_router)

@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/Card";
+import { MealRating } from "./MealRating";
 import {
   Salad,
   UtensilsCrossed,
@@ -27,6 +28,8 @@ interface MealCardProps {
   isCurrent?: boolean;
   isOpen?: boolean;
   isLastServed?: boolean;
+  dateStr?: string;
+  hideRatingButtons?: boolean;
 }
 
 export function MealCard({
@@ -35,64 +38,87 @@ export function MealCard({
   isCurrent = false,
   isOpen = false,
   isLastServed = false,
+  dateStr = new Date().toLocaleDateString("pt-BR").replace(/\//g, "-"),
+  hideRatingButtons = false,
 }: MealCardProps) {
+  const getMealType = (): "desjejum" | "almoco" | "jantar" => {
+    const t = title.toLowerCase();
+    if (t.includes("café") || t.includes("desjejum")) return "desjejum";
+    if (t.includes("almoço")) return "almoco";
+    return "jantar";
+  };
+
+  const mealType = getMealType();
+  const localStorageKey = `ru-vote:${dateStr}-${mealType}`;
+
+  const isFutureMeal = (): boolean => {
+    try {
+      const todayString = new Date().toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      });
+      const [todayDay, todayMonth, todayYear] = todayString
+        .split("/")
+        .map(Number);
+      const today = new Date(todayYear, todayMonth - 1, todayDay);
+
+      const [cardDay, cardMonth, cardYear] = dateStr.split("-").map(Number);
+      const cardDate = new Date(cardYear, cardMonth - 1, cardDay);
+
+      return cardDate > today;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const hideRating = isFutureMeal();
+
   const getSectionStyle = (sectionTitle: string) => {
     const t = sectionTitle.toLowerCase();
-
-    if (t.includes("vegetariana")) {
+    if (t.includes("vegetariana"))
       return {
         icon: <Vegan className="w-4 h-4 text-emerald-500" />,
         highlight: true,
       };
-    }
-    if (t.includes("principal") || t.includes("proteína")) {
+    if (t.includes("principal") || t.includes("proteína"))
       return {
         icon: <UtensilsCrossed className="w-4 h-4 text-amber-600" />,
         highlight: false,
       };
-    }
-    if (t.includes("bebida") || t.includes("suco")) {
+    if (t.includes("bebida") || t.includes("suco"))
       return {
         icon: <Coffee className="w-4 h-4 text-blue-500" />,
         highlight: false,
       };
-    }
-    if (t.includes("sopa")) {
+    if (t.includes("sopa"))
       return {
         icon: <Soup className="w-4 h-4 text-orange-500" />,
         highlight: false,
       };
-    }
-    if (t.includes("pã")) {
+    if (t.includes("pã"))
       return {
         icon: <Sandwich className="w-4 h-4 text-amber-800" />,
         highlight: false,
       };
-    }
-    if (t.includes("acompanhamento")) {
+    if (t.includes("acompanhamento"))
       return {
         icon: <Utensils className="w-4 h-4 text-cyan-600" />,
         highlight: false,
       };
-    }
-    if (t.includes("guarnição")) {
+    if (t.includes("guarnição"))
       return {
         icon: <CookingPot className="w-4 h-4 text-amber-700" />,
         highlight: false,
       };
-    }
-    if (t.includes("raiz") || t.includes("farináceo")) {
+    if (t.includes("raiz") || t.includes("farináceo"))
       return {
         icon: <Utensils className="w-4 h-4 text-yellow-600" />,
         highlight: false,
       };
-    }
-    if (t.includes("salada")) {
+    if (t.includes("salada"))
       return {
         icon: <Salad className="w-4 h-4 text-green-500" />,
         highlight: false,
       };
-    }
 
     return {
       icon: <Citrus className="w-4 h-4 text-red-500" />,
@@ -113,67 +139,79 @@ export function MealCard({
   }
 
   return (
-    <Card className="relative overflow-hidden p-6 transition-all duration-300 bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 shadow-xs">
-      {isCurrent && isOpen && (
-        <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 animate-pulse border border-blue-100 dark:border-blue-900/50">
-          <Sparkles className="w-3 h-3" />
-          Servindo agora
-        </span>
-      )}
+    <Card className="relative overflow-hidden p-6 transition-all duration-300 bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 shadow-xs flex flex-col justify-between">
+      <div>
+        {isCurrent && isOpen && (
+          <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 animate-pulse border border-blue-100 dark:border-blue-900/50">
+            <Sparkles className="w-3 h-3" />
+            Servindo agora
+          </span>
+        )}
 
-      {isCurrent && !isOpen && isLastServed && (
-        <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40">
-          <History className="w-3.5 h-3.5" />
-          Última refeição servida
-        </span>
-      )}
+        {isCurrent && !isOpen && isLastServed && (
+          <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40">
+            <History className="w-3.5 h-3.5" />
+            Última refeição servida
+          </span>
+        )}
 
-      {isCurrent && !isOpen && !isLastServed && (
-        <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700/60">
-          <CalendarDays className="w-3.5 h-3.5" />
-          Vai servir
-        </span>
-      )}
+        {isCurrent && !isOpen && !isLastServed && (
+          <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700/60">
+            <CalendarDays className="w-3.5 h-3.5" />
+            Vai servir
+          </span>
+        )}
 
-      <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-100 mb-4 tracking-tight flex items-center gap-2">
-        <ChefHat className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
-        {title}
-      </h3>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-100 mb-4 tracking-tight flex items-center gap-2">
+          <ChefHat className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+          {title}
+        </h3>
 
-      <div className="divide-y divide-gray-50 dark:divide-zinc-800/50">
-        {sections.map((section, index) => {
-          const { icon, highlight } = getSectionStyle(section.title);
+        <div className="divide-y divide-gray-50 dark:divide-zinc-800/50">
+          {sections.map((section, index) => {
+            const { icon, highlight } = getSectionStyle(section.title);
 
-          return (
-            <div
-              key={index}
-              className="py-3.5 border-b border-gray-50 dark:border-zinc-800/50 last:border-0 first:pt-0"
-            >
-              <div className="flex items-center gap-2 mb-1.5 text-gray-400 dark:text-zinc-500">
-                {icon}
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500">
-                  {section.title}
-                </span>
+            return (
+              <div
+                key={index}
+                className="py-3.5 border-b border-gray-50 dark:border-zinc-800/50 last:border-0 first:pt-0"
+              >
+                <div className="flex items-center gap-2 mb-1.5 text-gray-400 dark:text-zinc-500">
+                  {icon}
+                  <span className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500">
+                    {section.title}
+                  </span>
+                </div>
+
+                <ul className="space-y-1">
+                  {section.items.map((item, itemIdx) => (
+                    <li
+                      key={itemIdx}
+                      className={`text-sm leading-relaxed ${
+                        highlight
+                          ? "text-emerald-700 dark:text-emerald-400 font-semibold"
+                          : "text-gray-700 dark:text-zinc-300 font-medium"
+                      }`}
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
-
-              <ul className="space-y-1">
-                {section.items.map((item, itemIdx) => (
-                  <li
-                    key={itemIdx}
-                    className={`text-sm leading-relaxed ${
-                      highlight
-                        ? "text-emerald-700 dark:text-emerald-400 font-semibold"
-                        : "text-gray-700 dark:text-zinc-300 font-medium"
-                    }`}
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
+
+      {!hideRating && (
+        <MealRating
+          localStorageKey={localStorageKey}
+          dateStr={dateStr}
+          mealType={mealType}
+          isVoteAllowed={isCurrent && isOpen}
+          hideButtons={hideRatingButtons}
+        />
+      )}
     </Card>
   );
 }

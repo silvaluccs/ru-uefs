@@ -5,6 +5,11 @@ import type {
   CurrentMealResponse,
 } from "@/types/menu";
 
+export interface EvaluationStats {
+  likes: number;
+  dislikes: number;
+  percentage_likes: number;
+}
 export const menuService = {
   /**
    * Obtém o cardápio da semana inteira
@@ -36,5 +41,37 @@ export const menuService = {
   getMenuByDate: async (date: string): Promise<DailyMenu> => {
     const { data } = await api.get<DailyMenu>(`/menu/${date}`);
     return data;
+  },
+
+  /**
+   * Obtém as estatísticas de votação de uma refeição específica
+   */
+  getMealStats: async (
+    date: string,
+    mealType: string,
+  ): Promise<EvaluationStats> => {
+    const { data } = await api.get<EvaluationStats>(
+      `/reviews/stats/${date}/${mealType}`,
+    );
+    return data;
+  },
+
+  /**
+   * Envia a avaliação da refeição para o servidor
+   */
+  voteMeal: async ({
+    dateStr,
+    mealType,
+    voteType,
+  }: {
+    dateStr: string;
+    mealType: "desjejum" | "almoco" | "jantar";
+    voteType: "like" | "dislike";
+  }): Promise<void> => {
+    await api.post("/reviews/evaluate", {
+      date: dateStr,
+      meal_type: mealType,
+      vote: voteType,
+    });
   },
 };
