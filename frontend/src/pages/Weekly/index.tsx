@@ -146,14 +146,20 @@ export function WeeklyPage() {
                 <MealCard
                   title="Café da Manhã"
                   sections={adaptMealData(dayMealData, "desjejum")}
+                  dateStr={day.data.replace(/\//g, "-")}
+                  hideRatingButtons={true}
                 />
                 <MealCard
                   title="Almoço"
                   sections={adaptMealData(dayMealData, "almoco")}
+                  dateStr={day.data.replace(/\//g, "-")}
+                  hideRatingButtons={true}
                 />
                 <MealCard
                   title="Jantar"
                   sections={adaptMealData(dayMealData, "jantar")}
+                  dateStr={day.data.replace(/\//g, "-")}
+                  hideRatingButtons={true}
                 />
               </div>
             </div>

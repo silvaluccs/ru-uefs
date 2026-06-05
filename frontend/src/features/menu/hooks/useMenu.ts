@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { menuService } from "@/services/menuService";
 
 export const menuKeys = {
@@ -7,6 +7,9 @@ export const menuKeys = {
   today: () => [...menuKeys.all, "today"] as const,
   now: () => [...menuKeys.all, "now"] as const,
   date: (date: string) => [...menuKeys.all, "date", date] as const,
+  network: () => [...menuKeys.all, "network-status"] as const,
+  stats: (date: string, mealType: string) =>
+    [...menuKeys.all, "stats", date, mealType] as const,
 };
 
 export function useWeeklyMenu() {
@@ -37,5 +40,41 @@ export function useCurrentMeal() {
     staleTime: 1000 * 60 * 2,
     retry: 5,
     retryDelay: 2000,
+  });
+}
+
+export function useMealStats(
+  date: string,
+  mealType: "desjejum" | "almoco" | "jantar",
+) {
+  return useQuery({
+    queryKey: menuKeys.stats(date, mealType),
+    queryFn: () => menuService.getMealStats(date, mealType),
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+export function useNetworkCheck() {
+  return useQuery({
+    queryKey: menuKeys.network(),
+    queryFn: async () => {
+      const response = await fetch("/reviews/network-check");
+      if (!response.ok) throw new Error("Erro ao validar rede");
+      return response.json() as Promise<{ is_uefs_network: boolean }>;
+    },
+    retry: 2,
+  });
+}
+
+export function useVoteMeal() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: menuService.voteMeal,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: menuKeys.stats(variables.dateStr, variables.mealType),
+      });
+    },
   });
 }
