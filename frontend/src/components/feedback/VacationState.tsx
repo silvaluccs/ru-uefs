@@ -5,7 +5,7 @@ const FRASES_SISTEMA_OFF = [
   "O recesso vem e vai, mas a nossa vontade de comer no RU continua intacta.",
   "Preparando o sistema para o próximo ciclo enquanto você atualiza o SAGRES de 5 em 5 minutos.",
   "Partiu rodoviária! Todo mundo voltando para o interior e a API em modo de descanso.",
-  "Segurando as pontas na infraestrutura tal como você segura a sua última média.",
+  "Segurando as pontas na infraestrutura tal como teu professor segura a sua última média.",
   "Aproveitando o recesso acadêmico para limpar as panelas da nossa API.",
   "Refatorando a casa para garantir que no próximo semestre a fila ande mais rápido que o Direta.",
   "Nosso código foi passar uns dias em Cabuçu junto com a galera de Ecomp.",
