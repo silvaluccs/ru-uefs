@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { useTodayMenu, useCurrentMeal } from "@/features/menu/hooks/useMenu";
 import { MealTabs } from "@/features/menu/components/MealTabs";
 import { MealCard } from "@/features/menu/components/MealCard";
-import { MealSkeleton } from "@/features/menu/components/MealSkeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { WakingUpState } from "@/components/feedback/WakingUpState";
-import { Calendar, Clock, Info } from "lucide-react";
+import { Calendar, Info } from "lucide-react";
 import type { MealType } from "@/types/menu";
 
 interface MealSection {
