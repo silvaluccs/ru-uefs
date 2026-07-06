@@ -28,14 +28,14 @@ function getCurrentRestaurantStatus(): RestaurantStatus {
   const minutes = now.getMinutes();
   const timeInMinutes = hours * 60 + minutes;
 
-  const breakfastStart = 6 * 60 + 30;
+  const breakfastStart = 7 * 60 + 30;
   const breakfastEnd = 9 * 60;
 
-  const lunchStart = 11 * 60;
-  const lunchEnd = 14 * 60 + 30;
+  const lunchStart = 11 * 60 + 30;
+  const lunchEnd = 13 * 60 + 30;
 
   const dinnerStart = 17 * 60 + 30;
-  const dinnerEnd = 19 * 60 + 30;
+  const dinnerEnd = 19 * 60;
 
   if (timeInMinutes >= 0 && timeInMinutes < breakfastEnd) {
     if (timeInMinutes >= breakfastStart) {
@@ -50,7 +50,7 @@ function getCurrentRestaurantStatus(): RestaurantStatus {
       isOpen: false,
       isLastServed: false,
       defaultMeal: "breakfast",
-      badgeText: "Abre às 06:30 (Café da Manhã)",
+      badgeText: "Abre às 07:30 (Café da Manhã)",
     };
   }
 
@@ -60,14 +60,14 @@ function getCurrentRestaurantStatus(): RestaurantStatus {
         isOpen: true,
         isLastServed: false,
         defaultMeal: "lunch",
-        badgeText: "Almoço até 14:30",
+        badgeText: "Almoço até 13:30",
       };
     }
     return {
       isOpen: false,
       isLastServed: false,
       defaultMeal: "lunch",
-      badgeText: "Abre às 11:00 (Almoço)",
+      badgeText: "Abre às 11:30 (Almoço)",
     };
   }
 
@@ -77,7 +77,7 @@ function getCurrentRestaurantStatus(): RestaurantStatus {
         isOpen: true,
         isLastServed: false,
         defaultMeal: "dinner",
-        badgeText: "Jantar até 19:30",
+        badgeText: "Jantar até 19:00",
       };
     }
     return {
