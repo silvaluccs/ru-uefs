@@ -14,10 +14,10 @@ export function Footer() {
 
       {/* Credits & Links */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500 dark:text-zinc-500 font-medium max-w-3xl mx-auto px-2">
-        <span>Desenvolvido com 💙 para a comunidade.</span>
+        <span>Desenvolvido com 💙 por Lucas Silva para a comunidade.</span>
         <div className="flex items-center gap-6">
           <a
-            href="https://linkedin.com/"
+            href="https://linkedin.com/in/silvaluccs"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-md px-1"
@@ -25,7 +25,7 @@ export function Footer() {
             LinkedIn
           </a>
           <a
-            href="https://github.com/"
+            href="https://github.com/silvaluccs"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-gray-900 dark:hover:text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 rounded-md px-1"
