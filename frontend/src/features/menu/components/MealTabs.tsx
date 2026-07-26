@@ -1,5 +1,8 @@
+import type { ReactNode } from "react";
+import { motion } from "framer-motion";
 import type { MealType } from "@/types/menu";
 import { cn } from "@/utils/cn";
+import { SunDim, Sun, Moon } from "lucide-react";
 
 interface MealTabsProps {
   activeTab: MealType;
@@ -7,51 +10,60 @@ interface MealTabsProps {
 }
 
 export function MealTabs({ activeTab, onChangeTab }: MealTabsProps) {
-  const tabs: { id: MealType; label: string }[] = [
-    { id: "breakfast", label: "Café da Manhã" },
-    { id: "lunch", label: "Almoço" },
-    { id: "dinner", label: "Jantar" },
+  const tabs: { id: MealType; label: string; icon: ReactNode }[] = [
+    {
+      id: "breakfast",
+      label: "Café da Manhã",
+      icon: <SunDim className="w-4 h-4" />,
+    },
+    {
+      id: "lunch",
+      label: "Almoço",
+      icon: <Sun className="w-4 h-4" />,
+    },
+    {
+      id: "dinner",
+      label: "Jantar",
+      icon: <Moon className="w-4 h-4" />,
+    },
   ];
 
-  const getTranslateClass = (tab: MealType) => {
-    switch (tab) {
-      case "breakfast":
-        return "translate-x-0";
-      case "lunch":
-        return "translate-x-full";
-      case "dinner":
-        return "translate-x-[200%]";
-      default:
-        return "translate-x-0";
-    }
-  };
-
   return (
-    <div className="relative flex bg-gray-50/60 dark:bg-zinc-900/60 p-1 rounded-xl border border-gray-100 dark:border-zinc-800/80 w-full mb-6 transition-colors duration-300">
-      <div
-        className={cn(
-          "absolute top-1 bottom-1 left-1 w-[calc(33.3333%-4px)] rounded-lg bg-white dark:bg-zinc-800 shadow-xs border border-gray-100 dark:border-zinc-700/50 transition-transform duration-300 ease-out",
-          getTranslateClass(activeTab),
-        )}
-      />
+    <div className="w-full mb-6 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-1.5 shadow-2xs">
+      <div className="flex items-center justify-between relative">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
 
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onChangeTab(tab.id)}
-            className={cn(
-              "flex-1 text-center py-2.5 text-sm font-medium rounded-lg transition-colors duration-300 select-none relative z-10",
-              isActive
-                ? "text-blue-600 dark:text-blue-400 font-semibold"
-                : "text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300",
-            )}
-          >
-            {tab.label}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onChangeTab(tab.id)}
+              className={cn(
+                "relative z-10 flex-1 flex items-center justify-center gap-2 py-3 text-xs sm:text-sm font-semibold transition-colors duration-200 select-none rounded-xl",
+                isActive
+                  ? "text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-gray-400 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200"
+              )}
+            >
+              {/* Fundo deslizante animado com Framer Motion */}
+              {isActive && (
+                <motion.div
+                  layoutId="activeTabBackground"
+                  className="absolute inset-0 bg-blue-50 dark:bg-zinc-800/80 rounded-xl -z-10 shadow-xs"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+
+              {/* Ícone com cor condicional */}
+              <span className={isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-400"}>
+                {tab.icon}
+              </span>
+
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
