@@ -167,8 +167,6 @@ export function MealCard({
               {title}
             </h3>
             <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400 dark:text-zinc-400">
-              <span>{isCurrent && isOpen ? "Servindo agora" : "Horário limite"}</span>
-              <span>•</span>
               <span className="inline-flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
                 <Clock className="w-3 h-3" /> até {getMealTimeLimit()}
               </span>
