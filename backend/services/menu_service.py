@@ -56,6 +56,9 @@ async def fetch_current_week_menu(collection: AsyncCollection) -> dict:
         return {}
     latest_menu["_id"] = str(latest_menu["_id"])
 
+    if "created_at" in latest_menu and isinstance(latest_menu["created_at"], datetime):
+        latest_menu["created_at"] = latest_menu["created_at"].isoformat()
+
     today = datetime.now(FUSO_BAHIA).date()
 
     start_day_menu = latest_menu["data_inicio"]
