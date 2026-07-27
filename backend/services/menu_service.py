@@ -4,7 +4,6 @@ from datetime import datetime, time, timedelta, timezone
 from pymongo.asynchronous.collection import AsyncCollection
 
 from backend.config.database import get_db_client
-
 from backend.services.work_time import load_schedule
 
 FUSO_BAHIA = timezone(timedelta(hours=-3))
@@ -89,10 +88,20 @@ async def fetch_menu_for_date(collection: AsyncCollection, date: str) -> dict:
 
 def get_current_meal(time_now: time, weekday: int) -> str | None:
     key = "weekday" if weekday < 5 else "saturday" if weekday == 5 else "sunday"
-    return next(
-        (meal for start, end, meal in HORARIOS[key] if start <= time_now <= end),
+    
+    # Mapeia o código da refeição para a chave correspondente no documento do MongoDB
+    meal_mapping = {
+        "breakfast": "desjejum",
+        "lunch": "almoco",
+        "dinner": "jantar",
+    }
+    
+    meal_code = next(
+        (code for start, end, code, label in HORARIOS[key] if start <= time_now <= end),
         None,
     )
+    
+    return meal_mapping.get(meal_code) if meal_code else None
 
 
 async def fetch_menu_for_now(collection: AsyncCollection) -> dict:
