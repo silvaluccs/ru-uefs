@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTodayMenu, useCurrentMeal } from "@/features/menu/hooks/useMenu";
+import { useTodayMenu, useCurrentMeal, useRestaurantStatus } from "@/features/menu/hooks/useMenu";
 import { MealTabs } from "@/features/menu/components/MealTabs";
 import { MealCard } from "@/features/menu/components/MealCard";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { WakingUpState } from "@/components/feedback/WakingUpState";
-import { Calendar, Info, Sparkles, HeartHandshake } from "lucide-react";
-import type { MealType } from "@/types/menu";
+import { Calendar, Sparkles, HeartHandshake } from "lucide-react";
+import type { MealType, RestaurantStatus } from "@/types/menu";
 
 import saladaImg from "@/assets/salada.png";
 import { Footer } from "@/components/layout/Footer";
@@ -15,89 +15,6 @@ import { Footer } from "@/components/layout/Footer";
 interface MealSection {
   title: string;
   items: string[];
-}
-
-interface RestaurantStatus {
-  isOpen: boolean;
-  isLastServed: boolean;
-  defaultMeal: MealType;
-  badgeText: string;
-}
-
-function getCurrentRestaurantStatus(): RestaurantStatus {
-  const now = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
-  );
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const timeInMinutes = hours * 60 + minutes;
-
-  const breakfastStart = 7 * 60 + 30;
-  const breakfastEnd = 9 * 60;
-
-  const lunchStart = 11 * 60 + 30;
-  const lunchEnd = 13 * 60 + 30;
-
-  const dinnerStart = 17 * 60 + 30;
-  const dinnerEnd = 19 * 60;
-
-  if (timeInMinutes >= 0 && timeInMinutes < breakfastEnd) {
-    if (timeInMinutes >= breakfastStart) {
-      return {
-        isOpen: true,
-        isLastServed: false,
-        defaultMeal: "breakfast",
-        badgeText: "Café da manhã até 09:00",
-      };
-    }
-    return {
-      isOpen: false,
-      isLastServed: false,
-      defaultMeal: "breakfast",
-      badgeText: "Abre às 07:30 (Café da Manhã)",
-    };
-  }
-
-  if (timeInMinutes >= breakfastEnd && timeInMinutes < lunchEnd) {
-    if (timeInMinutes >= lunchStart) {
-      return {
-        isOpen: true,
-        isLastServed: false,
-        defaultMeal: "lunch",
-        badgeText: "Almoço até 13:30",
-      };
-    }
-    return {
-      isOpen: false,
-      isLastServed: false,
-      defaultMeal: "lunch",
-      badgeText: "Abre às 11:30 (Almoço)",
-    };
-  }
-
-  if (timeInMinutes >= lunchEnd && timeInMinutes < dinnerEnd) {
-    if (timeInMinutes >= dinnerStart) {
-      return {
-        isOpen: true,
-        isLastServed: false,
-        defaultMeal: "dinner",
-        badgeText: "Jantar até 19:00",
-      };
-    }
-    return {
-      isOpen: false,
-      isLastServed: false,
-      defaultMeal: "dinner",
-      badgeText: "Abre às 17:30 (Jantar)",
-    };
-  }
-
-  return {
-    isOpen: false,
-    isLastServed: true,
-    defaultMeal: "dinner",
-    badgeText: "Última refeição servida",
-  };
 }
 
 function adaptMealData(
@@ -175,18 +92,17 @@ export function HomePage() {
     refetch: refetchMenu,
   } = useTodayMenu();
   const { data: currentMeal } = useCurrentMeal();
+  const { data: fetchedRestaurantStatus } = useRestaurantStatus();
 
   const [selectedTab, setSelectedTab] = useState<MealType | null>(null);
-  const [restaurantStatus, setRestaurantStatus] = useState<RestaurantStatus>(
-    getCurrentRestaurantStatus()
-  );
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRestaurantStatus(getCurrentRestaurantStatus());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
+  // Fallback seguro enquanto o status carrega do backend
+  const restaurantStatus: RestaurantStatus = fetchedRestaurantStatus ?? {
+    isOpen: false,
+    isLastServed: false,
+    defaultMeal: "breakfast",
+    badgeText: "Verificando status...",
+  };
 
   const activeTab: MealType =
     selectedTab ??
@@ -249,7 +165,7 @@ export function HomePage() {
             <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-zinc-50 leading-tight">
               Menos Complicação,{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-                Mais  Informação.
+                Mais Informação.
               </span>
             </h1>
 
@@ -279,8 +195,6 @@ export function HomePage() {
               </div>
             </div>
           </div>
-
-
         </div>
       </section>
 

@@ -7,6 +7,7 @@ export const menuKeys = {
   weekly: () => [...menuKeys.all, "weekly"] as const,
   today: () => [...menuKeys.all, "today"] as const,
   now: () => [...menuKeys.all, "now"] as const,
+  status: () => [...menuKeys.all, "status"] as const, // <- Adicionado aqui
   date: (date: string) => [...menuKeys.all, "date", date] as const,
   network: () => [...menuKeys.all, "network-status"] as const,
   stats: (date: string, mealType: string) =>
@@ -78,5 +79,15 @@ export function useVoteMeal() {
         queryKey: menuKeys.stats(variables.dateStr, variables.mealType),
       });
     },
+  });
+}
+
+export function useRestaurantStatus() {
+  return useQuery({
+    queryKey: menuKeys.status(),
+    queryFn: menuService.getRestaurantStatus,
+    staleTime: 1000 * 30, // 30 segundos
+    refetchInterval: 1000 * 60, // Atualiza automaticamente a cada 1 minuto
+    retry: 3,
   });
 }
