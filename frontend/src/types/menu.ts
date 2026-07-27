@@ -45,3 +45,10 @@ export interface CurrentMealResponse {
   mealType: MealType;
   isActive: boolean;
 }
+
+export interface RestaurantStatus {
+  isOpen: boolean;
+  isLastServed: boolean;
+  defaultMeal: MealType | string;
+  badgeText: string;
+}

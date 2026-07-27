@@ -3,6 +3,7 @@ import type {
   DailyMenu,
   WeeklyMenuResponse,
   CurrentMealResponse,
+  RestaurantStatus,
 } from "@/types/menu";
 
 export interface EvaluationStats {
@@ -11,6 +12,15 @@ export interface EvaluationStats {
   percentage_likes: number;
 }
 export const menuService = {
+
+  /**
+   * Obtém o status atual de funcionamento do restaurante
+   */
+  getRestaurantStatus: async (): Promise<RestaurantStatus> => {
+    const { data } = await api.get<RestaurantStatus>("/menu/status");
+    return data;
+  },
+
   /**
    * Obtém o cardápio da semana inteira
    */
