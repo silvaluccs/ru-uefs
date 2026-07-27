@@ -7,9 +7,15 @@ from backend.services.menu_service import (
     fetch_menu_for_now,
     fetch_today_menu,
     get_menu_collection,
+    get_restaurant_status,
 )
 
 router = APIRouter(prefix="/api/v1/menu", tags=["Menu"])
+
+
+@router.get("/status")
+async def get_status():
+    return await get_restaurant_status()
 
 
 @router.get("/week")

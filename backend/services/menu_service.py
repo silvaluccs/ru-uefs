@@ -5,25 +5,11 @@ from pymongo.asynchronous.collection import AsyncCollection
 
 from backend.config.database import get_db_client
 
+from backend.services.work_time import load_schedule
+
 FUSO_BAHIA = timezone(timedelta(hours=-3))
 
-HORARIOS = {
-    "weekday": [
-        (time(6, 30), time(9, 0), "desjejum"),
-        (time(11, 0), time(14, 30), "almoco"),
-        (time(17, 30), time(19, 30), "jantar"),
-    ],
-    "saturday": [
-        (time(6, 30), time(9, 0), "desjejum"),
-        (time(11, 30), time(14, 0), "almoco"),
-        (time(17, 30), time(19, 0), "jantar"),
-    ],
-    "sunday": [
-        (time(7, 30), time(9, 0), "desjejum"),
-        (time(11, 30), time(13, 30), "almoco"),
-        (time(17, 30), time(19, 0), "jantar"),
-    ],
-}
+HORARIOS = load_schedule()
 
 
 def get_menu_collection() -> AsyncCollection:
@@ -31,6 +17,38 @@ def get_menu_collection() -> AsyncCollection:
     collection_name = os.getenv("MONGO_COLLECTION", "cardapios")
     client = get_db_client()
     return client[db_name][collection_name]
+
+
+async def get_restaurant_status() -> dict:
+    now = datetime.now(FUSO_BAHIA)
+    time_now = now.time()
+    weekday = now.weekday()  
+
+    key = "weekday" if weekday < 5 else "saturday" if weekday == 5 else "sunday"
+    meals = HORARIOS[key]
+
+    for start, end, meal_code, meal_label in meals:
+        if time_now < start:
+            return {
+                "isOpen": False,
+                "isLastServed": False,
+                "defaultMeal": meal_code,
+                "badgeText": f"Abre às {start.strftime('%H:%M')} ({meal_label})",
+            }
+        if start <= time_now <= end:
+            return {
+                "isOpen": True,
+                "isLastServed": False,
+                "defaultMeal": meal_code,
+                "badgeText": f"{meal_label} até {end.strftime('%H:%M')}",
+            }
+
+    return {
+        "isOpen": False,
+        "isLastServed": True,
+        "defaultMeal": "dinner",
+        "badgeText": "Última refeição servida",
+    }
 
 
 async def fetch_current_week_menu(collection: AsyncCollection) -> dict:
