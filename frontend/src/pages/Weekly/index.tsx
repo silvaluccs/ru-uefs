@@ -24,7 +24,13 @@ import type { RefeicaoDia } from "@/types/menu";
 
 export function WeeklyPage() {
   const { data: weeklyData, isLoading, isError, refetch } = useWeeklyMenu();
-  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(0);
+
+  const getInitialDayIndex = () => {
+    const bahiaTime = new Date(Date.now() - 3 * 3600 * 1000);
+    return (bahiaTime.getUTCDay() + 6) % 7;
+  };
+
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(getInitialDayIndex);
 
   if (isLoading) {
     return <WakingUpState />;
