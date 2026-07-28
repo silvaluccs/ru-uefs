@@ -18,78 +18,9 @@ import {
 
 import bandejaImg from "@/assets/bandeja.png";
 import saladaImg from "@/assets/salada.png";
+import { adaptMealData } from "@/features/menu/utils/adaptMealData";
+import type { RefeicaoDia } from "@/types/menu";
 
-interface MealSection {
-  title: string;
-  items: string[];
-}
-
-function adaptMealData(
-  mealData: any,
-  type: "desjejum" | "almoco" | "jantar"
-): MealSection[] {
-  if (!mealData) return [];
-
-  const cleanList = (items: any): string[] => {
-    if (!items) return [];
-    if (Array.isArray(items)) return items.filter(Boolean);
-    return [items].filter(Boolean);
-  };
-
-  if (type === "desjejum" && mealData.desjejum) {
-    const d = mealData.desjejum;
-    return [
-      { title: "Pães / Carboidratos", items: cleanList(d.pao) },
-      { title: "Proteína", items: cleanList(d.proteina) },
-      { title: "Raiz ou Farináceo", items: cleanList(d.raiz_ou_farinaceio) },
-      {
-        title: "Opção Ovolactovegetariana",
-        items: cleanList(d.ovolactovegetariano),
-      },
-      { title: "Fruta", items: cleanList(d.fruta) },
-      { title: "Bebidas", items: d.bebida || [] },
-    ].filter((section) => section.items.length > 0);
-  }
-
-  if (type === "almoco" && mealData.almoco) {
-    const a = mealData.almoco;
-    return [
-      {
-        title: "Prato Principal",
-        items: cleanList([a.proteina, a.opcao_proteina]),
-      },
-      {
-        title: "Acompanhamentos",
-        items: cleanList([a.acompanhamento_I, a.acompanhamento_II]),
-      },
-      { title: "Guarnição", items: cleanList(a.guarnicao) },
-      { title: "Saladas", items: cleanList([a.salada_crua, a.salada_cozida]) },
-      {
-        title: "Opção Ovolactovegetariana",
-        items: a.ovolactovegetariano || [],
-      },
-      { title: "Sobremesa", items: cleanList(a.fruta) },
-      { title: "Suco", items: cleanList(a.suco) },
-    ].filter((section) => section.items.length > 0);
-  }
-
-  if (type === "jantar" && mealData.jantar) {
-    const j = mealData.jantar;
-    return [
-      { title: "Prato Principal / Proteína", items: cleanList(j.proteina) },
-      { title: "Sopa", items: cleanList(j.sopa) },
-      { title: "Raiz ou Farináceo", items: cleanList(j.raiz_ou_farinaceio) },
-      { title: "Acompanhamentos", items: cleanList(j.pao) },
-      {
-        title: "Opção Ovolactovegetariana",
-        items: j.ovolactovegetariano || [],
-      },
-      { title: "Bebidas", items: j.bebida || [] },
-    ].filter((section) => section.items.length > 0);
-  }
-
-  return [];
-}
 
 export function WeeklyPage() {
   const { data: weeklyData, isLoading, isError, refetch } = useWeeklyMenu();
@@ -120,7 +51,7 @@ export function WeeklyPage() {
   }
 
   const currentActiveDay = dayList[selectedDayIndex] || dayList[0];
-  const activeDayMealData = currentActiveDay?.refeicoes?.[0];
+  const activeDayMealData: RefeicaoDia = currentActiveDay?.refeicoes?.[0];
 
   return (
     <div className="space-y-10 pb-12 overflow-x-hidden">
