@@ -57,7 +57,7 @@ async def fetch_current_week_menu(collection: AsyncCollection) -> dict:
     latest_menu["_id"] = str(latest_menu["_id"])
 
     if "created_at" in latest_menu and isinstance(latest_menu["created_at"], datetime):
-        latest_menu["created_at"] = latest_menu["created_at"].isoformat()
+        latest_menu["created_at"] = datetime.now(FUSO_BAHIA).time().isoformat()
 
     today = datetime.now(FUSO_BAHIA).date()
 
@@ -67,7 +67,11 @@ async def fetch_current_week_menu(collection: AsyncCollection) -> dict:
     start_date = datetime.strptime(start_day_menu, "%d/%m/%Y").date()
     end_date = datetime.strptime(end_day_menu, "%d/%m/%Y").date()
 
-    return latest_menu if start_date <= today <= end_date else {}
+    if not start_date <= today <= end_date:
+        return {}
+
+    return latest_menu
+
 
 
 async def fetch_today_menu(collection: AsyncCollection) -> dict:
@@ -86,13 +90,17 @@ async def fetch_menu_for_date(collection: AsyncCollection, date: str) -> dict:
         None,
     )
 
-    return date_entry if date_entry else {}
+    if not date_entry:
+        return {}
+
+    date_entry["created_at"] = datetime.now(FUSO_BAHIA).time().isoformat()
+
+    return date_entry
 
 
 def get_current_meal(time_now: time, weekday: int) -> str | None:
     key = "weekday" if weekday < 5 else "saturday" if weekday == 5 else "sunday"
     
-    # Mapeia o código da refeição para a chave correspondente no documento do MongoDB
     meal_mapping = {
         "breakfast": "desjejum",
         "lunch": "almoco",
@@ -123,3 +131,5 @@ async def fetch_menu_for_now(collection: AsyncCollection) -> dict:
     meal = refeicoes.get(meal_key)
 
     return {"refeicao": meal_key, "dados": meal} if meal else {}
+
+

@@ -33,10 +33,14 @@ export interface DailyMenu {
   dia: string; // Substitui 'dayOfWeek'
   data: string; // Substitui 'date'
   refeicoes: RefeicaoDia[];
+  created_at?: string;
 }
 
 export interface WeeklyMenuResponse {
-  days: DailyMenu[];
+  data_inicio: string;
+  data_fim: string;
+  cardapio: DailyMenu[];
+  created_at?: string;
 }
 
 export type MealType = "breakfast" | "lunch" | "dinner";

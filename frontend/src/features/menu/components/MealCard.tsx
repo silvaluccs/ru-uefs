@@ -48,12 +48,6 @@ export function MealCard({
   const mealType = getMealType();
   const localStorageKey = `ru-vote:${dateStr}-${mealType}`;
 
-  const getMealTimeLimit = () => {
-    if (mealType === "desjejum") return "09:00";
-    if (mealType === "almoco") return "13:30";
-    return "19:00";
-  };
-
   const isFutureMeal = (): boolean => {
     try {
       const todayString = new Date().toLocaleDateString("pt-BR", {
@@ -166,11 +160,6 @@ export function MealCard({
             <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-50 tracking-tight">
               {title}
             </h3>
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400 dark:text-zinc-400">
-              <span className="inline-flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
-                <Clock className="w-3 h-3" /> até {getMealTimeLimit()}
-              </span>
-            </div>
           </div>
         </div>
 
