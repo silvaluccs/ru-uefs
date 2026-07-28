@@ -14,13 +14,13 @@ import {
   Bell,
   ChevronLeft,
   ChevronRight,
+  Clock,
 } from "lucide-react";
 
 import bandejaImg from "@/assets/bandeja.png";
 import saladaImg from "@/assets/salada.png";
 import { adaptMealData } from "@/features/menu/utils/adaptMealData";
 import type { RefeicaoDia } from "@/types/menu";
-
 
 export function WeeklyPage() {
   const { data: weeklyData, isLoading, isError, refetch } = useWeeklyMenu();
@@ -50,12 +50,16 @@ export function WeeklyPage() {
     );
   }
 
+  const getMealLastUpdate = () => {
+    if (!weeklyData?.created_at) return "--:--";
+    return weeklyData.created_at.slice(0, 5);
+  };
+
   const currentActiveDay = dayList[selectedDayIndex] || dayList[0];
   const activeDayMealData: RefeicaoDia = currentActiveDay?.refeicoes?.[0];
 
   return (
     <div className="space-y-10 pb-12 overflow-x-hidden">
-      {/* HERO SECTION */}
       <section className="relative overflow-hidden rounded-3xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-white dark:border-zinc-800/80 p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="absolute top-0 left-1/4 w-80 h-80 bg-blue-500/10 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2" />
         <div className="absolute bottom-0 right-10 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none translate-y-1/3" />
@@ -93,6 +97,11 @@ export function WeeklyPage() {
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Sujeito a alterações</span>
               </div>
+
+              <div className="flex items-center gap-2 px-3.5 py-1.5 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md rounded-xl text-sm font-medium text-gray-700 dark:text-zinc-300 border border-gray-200/60 dark:border-zinc-700/60 shadow-sm">
+                <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span>Atualizado às {getMealLastUpdate()}</span>
+              </div>
             </div>
           </div>
 
@@ -110,7 +119,6 @@ export function WeeklyPage() {
         </div>
       </section>
 
-      {/* SELETOR SEMANAL */}
       <section className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400">
@@ -159,7 +167,6 @@ export function WeeklyPage() {
         </div>
       </section>
 
-      {/* GRID DE REFEIÇÕES */}
       <AnimatePresence mode="wait">
         <motion.div
           key={selectedDayIndex}
@@ -229,7 +236,6 @@ export function WeeklyPage() {
         </motion.div>
       </AnimatePresence>
 
-      {/* BENTO GRID DE INFORMAÇÕES */}
       <section className="pt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-50/60 to-teal-50/40 dark:from-zinc-900/80 dark:to-zinc-900/50 border border-emerald-100/80 dark:border-zinc-800 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
           <div>

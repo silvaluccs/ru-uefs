@@ -6,13 +6,12 @@ import { MealCard } from "@/features/menu/components/MealCard";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { WakingUpState } from "@/components/feedback/WakingUpState";
-import { Calendar, Sparkles, HeartHandshake } from "lucide-react";
+import { Calendar, Sparkles, HeartHandshake, Clock } from "lucide-react";
 import type { MealType, RestaurantStatus } from "@/types/menu";
 
 import saladaImg from "@/assets/salada.png";
 import { Footer } from "@/components/layout/Footer";
 import { adaptMealData } from "@/features/menu/utils/adaptMealData";
-
 
 export function HomePage() {
   const {
@@ -26,7 +25,6 @@ export function HomePage() {
 
   const [selectedTab, setSelectedTab] = useState<MealType | null>(null);
 
-  // Fallback seguro enquanto o status carrega do backend
   const restaurantStatus: RestaurantStatus = fetchedRestaurantStatus ?? {
     isOpen: false,
     isLastServed: false,
@@ -70,6 +68,12 @@ export function HomePage() {
     dinner: "Jantar Completo",
   };
 
+  const getMealLastUpdate = () => {
+    if (!todayMenu?.created_at) return "--:--";
+
+    return todayMenu.created_at.slice(0, 5);
+  };
+
   const apiType =
     activeTab === "breakfast"
       ? "desjejum"
@@ -79,9 +83,7 @@ export function HomePage() {
 
   return (
     <div className="space-y-8 pb-10 overflow-x-hidden">
-      {/* HERO SECTION - Estilo SaaS com Efeito Glass */}
       <section className="relative overflow-hidden rounded-3xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-white dark:border-zinc-800/80 p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        {/* Glows de Fundo */}
         <div className="absolute top-0 left-0 w-64 h-64 bg-blue-400/10 dark:bg-zinc-700/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-400/10 dark:bg-zinc-700/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
@@ -99,7 +101,6 @@ export function HomePage() {
               </span>
             </h1>
 
-            {/* Badges de Data e Status */}
             <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
               <div className="flex items-center gap-2 px-3.5 py-1.5 bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-xl text-xs font-medium text-gray-700 dark:text-zinc-300 border border-gray-200/50 dark:border-zinc-700/50 shadow-sm">
                 <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -123,14 +124,17 @@ export function HomePage() {
                   {restaurantStatus.badgeText}
                 </span>
               </div>
+
+              <div className="flex items-center gap-2 px-3.5 py-1.5 bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-xl text-xs font-medium text-gray-700 dark:text-zinc-300 border border-gray-200/50 dark:border-zinc-700/50 shadow-sm">
+                <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span>Atualizado às {getMealLastUpdate()}</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* GRID PRINCIPAL */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Coluna Principal */}
         <main className="lg:col-span-8 space-y-6">
           <MealTabs activeTab={activeTab} onChangeTab={setSelectedTab} />
 
@@ -157,7 +161,6 @@ export function HomePage() {
           </AnimatePresence>
         </main>
 
-        {/* Sidebar Lateral */}
         <aside className="lg:col-span-4 space-y-6">
           <div className="rounded-3xl bg-white dark:bg-zinc-900/70 border border-gray-100 dark:border-zinc-900/70 p-6 shadow-2xs flex flex-col">
             <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold text-xs tracking-wider uppercase mb-3">
