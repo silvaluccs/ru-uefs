@@ -51,3 +51,15 @@ def get_evaluation_collection() -> AsyncCollection:
     client = get_db_client()
     db_name = os.getenv("MONGO_INITDB_DATABASE") or "ru_uefs"
     return client[db_name]["evaluations"]
+
+
+def get_queue_collection() -> AsyncCollection:
+    client = get_db_client()
+    db_name = os.getenv("MONGO_INITDB_DATABASE") or "ru_uefs"
+    return client[db_name]["queue_votes"]
+
+
+def get_item_evaluation_collection() -> AsyncCollection:
+    client = get_db_client()
+    db_name = os.getenv("MONGO_INITDB_DATABASE") or "ru_uefs"
+    return client[db_name]["item_evaluations"]

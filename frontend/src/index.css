@@ -8,8 +8,9 @@
   --color-surface-300: #d1d5db;
 }
 
+html,
 body {
-  background-color: var(--color-white);
+  background-color: #ffffff;
   color: var(--color-gray-900);
   font-family:
     system-ui,
@@ -17,4 +18,18 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html.dark,
+html.dark body {
+  background-color: #09090b;
+  color: var(--color-zinc-50);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }

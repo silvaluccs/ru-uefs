@@ -1,5 +1,8 @@
+import { useMemo } from "react";
 import { Card } from "@/components/ui/Card";
-import { MealRating } from "./MealRating";
+import { useItemStats, useVoteItem, useNetworkCheck } from "@/features/menu/hooks/useMenu";
+import { flattenMealItems } from "@/features/menu/utils/flattenMealItems";
+import { VoteButton } from "./VoteButton";
 import {
   Salad,
   UtensilsCrossed,
@@ -11,7 +14,8 @@ import {
   Citrus,
   Vegan,
   CookingPot,
-  Clock,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 
 interface MealSection {
@@ -27,6 +31,10 @@ interface MealCardProps {
   isLastServed?: boolean;
   dateStr?: string;
   hideRatingButtons?: boolean;
+}
+
+function voteKey(dateStr: string, mealType: string, itemKey: string) {
+  return `ru-item-vote:${dateStr}-${mealType}-${itemKey}`;
 }
 
 export function MealCard({
@@ -46,7 +54,6 @@ export function MealCard({
   };
 
   const mealType = getMealType();
-  const localStorageKey = `ru-vote:${dateStr}-${mealType}`;
 
   const isFutureMeal = (): boolean => {
     try {
@@ -67,7 +74,28 @@ export function MealCard({
     }
   };
 
-  const hideRating = isFutureMeal();
+  const { data: networkData } = useNetworkCheck();
+  const { data: itemStats } = useItemStats(dateStr, mealType);
+  const { mutate: sendItemVote } = useVoteItem();
+
+  const flatItems = useMemo(() => flattenMealItems(sections), [sections]);
+  const statsByKey = useMemo(() => {
+    const map: Record<string, { likes: number; dislikes: number; percentage_likes: number }> = {};
+    itemStats?.forEach((s) => {
+      map[s.item_key] = s;
+    });
+    return map;
+  }, [itemStats]);
+
+  const isUefsNetwork = networkData?.is_uefs_network ?? false;
+  const isVotableMeal = !hideRatingButtons && !isFutureMeal() && isCurrent && isOpen;
+  const canInteract = isVotableMeal && isUefsNetwork;
+
+  const handleVote = (itemKey: string, type: "like" | "dislike") => {
+    if (!canInteract) return;
+    localStorage.setItem(voteKey(dateStr, mealType, itemKey), type);
+    sendItemVote({ dateStr, mealType, itemKey, voteType: type });
+  };
 
   // Estilos de Ícones & Cores fieis ao mockup
   const getSectionStyle = (sectionTitle: string) => {
@@ -148,6 +176,8 @@ export function MealCard({
     );
   }
 
+  let flatCursor = 0;
+
   return (
     <Card className="p-6 sm:p-7 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-3xl shadow-xs transition-all duration-300">
       {/* Header do Card (Título + Status) */}
@@ -186,7 +216,7 @@ export function MealCard({
         )}
       </div>
 
-      {/* Lista de Alimentos */}
+      {/* Lista de Alimentos, com avaliação individual por prato */}
       <div className="divide-y divide-gray-100 dark:divide-zinc-800/60">
         {sections.map((section, index) => {
           const { icon, bg, isVegetarian } = getSectionStyle(section.title);
@@ -202,38 +232,78 @@ export function MealCard({
                   {section.title}
                 </span>
 
-                <div className="space-y-0.5">
-                  {section.items.map((item, itemIdx) => (
-                    <p
-                      key={itemIdx}
-                      className={`text-sm sm:text-base ${
-                        isVegetarian
-                          ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                          : "text-gray-800 dark:text-zinc-100 font-semibold"
-                      }`}
-                    >
-                      {item}
-                    </p>
-                  ))}
+                <div className="space-y-1.5">
+                  {section.items.map((item, itemIdx) => {
+                    const flat = flatItems[flatCursor];
+                    flatCursor += 1;
+                    const stats = flat ? statsByKey[flat.key] : undefined;
+                    const myVote = flat
+                      ? (localStorage.getItem(voteKey(dateStr, mealType, flat.key)) as
+                          | "like"
+                          | "dislike"
+                          | null)
+                      : null;
+
+                    return (
+                      <div key={itemIdx} className="flex items-center gap-2">
+                        <p
+                          className={`text-sm sm:text-base flex-1 min-w-0 ${
+                            isVegetarian
+                              ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                              : "text-gray-800 dark:text-zinc-100 font-semibold"
+                          }`}
+                        >
+                          {item}
+                        </p>
+                        {isVotableMeal ? (
+                          <div className="shrink-0 flex items-center gap-1.5">
+                          {stats && stats.likes + stats.dislikes > 0 && (
+                            <span
+                              className={`text-[10px] font-bold ${
+                                stats.percentage_likes >= 70
+                                  ? "text-emerald-500"
+                                  : "text-amber-500"
+                              }`}
+                            >
+                              {stats.percentage_likes}%
+                            </span>
+                          )}
+                          <VoteButton
+                            type="like"
+                            size="sm"
+                            active={myVote === "like"}
+                            disabled={!canInteract || !flat}
+                            onClick={() => flat && handleVote(flat.key, "like")}
+                          />
+                          <VoteButton
+                            type="dislike"
+                            size="sm"
+                            active={myVote === "dislike"}
+                            disabled={!canInteract || !flat}
+                            onClick={() => flat && handleVote(flat.key, "dislike")}
+                          />
+                          </div>
+                        ) : (
+                          stats && stats.likes + stats.dislikes > 0 && (
+                            <div className="shrink-0 flex items-center gap-2 text-[10px] font-bold">
+                              <span className="flex items-center gap-0.5 text-emerald-500">
+                                <ThumbsUp className="w-3 h-3" /> {stats.likes}
+                              </span>
+                              <span className="flex items-center gap-0.5 text-red-500">
+                                <ThumbsDown className="w-3 h-3" /> {stats.dislikes}
+                              </span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           );
         })}
       </div>
-
-      {/* Avaliação no rodapé do card */}
-      {!hideRating && (
-        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800/80">
-          <MealRating
-            localStorageKey={localStorageKey}
-            dateStr={dateStr}
-            mealType={mealType}
-            isVoteAllowed={isCurrent && isOpen}
-            hideButtons={hideRatingButtons}
-          />
-        </div>
-      )}
     </Card>
   );
 }

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from backend.api.evaluation_route import router as evaluation_router
+from backend.api.queue_route import router as queue_router
 from backend.api.route import router as menu_router
 from backend.config.database import close_db_client, get_db_client
 from fastapi import FastAPI
@@ -54,3 +55,4 @@ else:
 
 app.include_router(menu_router)
 app.include_router(evaluation_router)
+app.include_router(queue_router)

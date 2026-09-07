@@ -1,17 +1,47 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useTodayMenu, useCurrentMeal, useRestaurantStatus } from "@/features/menu/hooks/useMenu";
-import { MealTabs } from "@/features/menu/components/MealTabs";
+import { useEffect, useRef, useState } from "react";
+import {
+  useTodayMenu,
+  useCurrentMeal,
+  useRestaurantStatus,
+} from "@/features/menu/hooks/useMenu";
+import { MealFeedSection } from "@/features/menu/components/MealFeedSection";
 import { MealCard } from "@/features/menu/components/MealCard";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { WakingUpState } from "@/components/feedback/WakingUpState";
-import { Calendar, Sparkles, HeartHandshake, Clock } from "lucide-react";
+import { adaptMealData } from "@/features/menu/utils/adaptMealData";
+import { Calendar } from "lucide-react";
 import type { MealType, RestaurantStatus } from "@/types/menu";
 
-import saladaImg from "@/assets/salada.png";
-import { Footer } from "@/components/layout/Footer";
-import { adaptMealData } from "@/features/menu/utils/adaptMealData";
+const MEALS: {
+  key: MealType;
+  apiType: "desjejum" | "almoco" | "jantar";
+  title: string;
+  timeLabel: string;
+  accent: { text: string; dot: string; glow: string };
+}[] = [
+  {
+    key: "breakfast",
+    apiType: "desjejum",
+    title: "Café da manhã",
+    timeLabel: "O começo do dia no campus.",
+    accent: { text: "text-amber-500", dot: "bg-amber-500", glow: "rgba(245,158,11,.22)" },
+  },
+  {
+    key: "lunch",
+    apiType: "almoco",
+    title: "Almoço",
+    timeLabel: "O pico do dia — quando o RU lota.",
+    accent: { text: "text-blue-600", dot: "bg-blue-600", glow: "rgba(37,99,235,.20)" },
+  },
+  {
+    key: "dinner",
+    apiType: "jantar",
+    title: "Jantar",
+    timeLabel: "Para fechar a noite com calma.",
+    accent: { text: "text-indigo-500", dot: "bg-indigo-500", glow: "rgba(99,102,241,.20)" },
+  },
+];
 
 export function HomePage() {
   const {
@@ -23,7 +53,9 @@ export function HomePage() {
   const { data: currentMeal } = useCurrentMeal();
   const { data: fetchedRestaurantStatus } = useRestaurantStatus();
 
-  const [selectedTab, setSelectedTab] = useState<MealType | null>(null);
+  const feedRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrolledToCurrent = useRef(false);
 
   const restaurantStatus: RestaurantStatus = fetchedRestaurantStatus ?? {
     isOpen: false,
@@ -32,11 +64,37 @@ export function HomePage() {
     badgeText: "Verificando status...",
   };
 
-  const activeTab: MealType =
-    selectedTab ??
-    (currentMeal?.isActive
-      ? currentMeal.mealType
-      : restaurantStatus.defaultMeal);
+  const activeMealKey: MealType | null = currentMeal?.isActive
+    ? currentMeal.mealType
+    : null;
+
+  // A rota /menu/now nem sempre retorna { mealType, isActive } (às vezes vem
+  // { refeicao, dados } ou { message }), então usamos o defaultMeal do status
+  // do restaurante como resultado confiável para saber a refeição "atual".
+  const effectiveMealKey: MealType | string = activeMealKey ?? restaurantStatus.defaultMeal;
+  const currentIndex = MEALS.findIndex((m) => m.key === effectiveMealKey);
+
+  useEffect(() => {
+    if (scrolledToCurrent.current) return;
+    if (!fetchedRestaurantStatus) return;
+    if (currentIndex < 1) {
+      scrolledToCurrent.current = true;
+      return;
+    }
+    const el = feedRef.current;
+    if (!el) return;
+    const target = el.children[currentIndex] as HTMLElement | undefined;
+    target?.scrollIntoView({ behavior: "instant" as ScrollBehavior });
+    setActiveIndex(currentIndex);
+    scrolledToCurrent.current = true;
+  }, [currentIndex, fetchedRestaurantStatus]);
+
+  const onFeedScroll = () => {
+    const el = feedRef.current;
+    if (!el) return;
+    const idx = Math.round(el.scrollTop / el.clientHeight);
+    if (idx !== activeIndex && idx >= 0 && idx < MEALS.length) setActiveIndex(idx);
+  };
 
   if (isLoadingMenu) {
     return <WakingUpState />;
@@ -61,132 +119,87 @@ export function HomePage() {
   }
 
   const dayData = todayMenu.refeicoes[0];
+  const dateStr = todayMenu.data?.replace(/\//g, "-") ?? "";
 
-  const tabTitles: Record<MealType, string> = {
-    breakfast: "Café da Manhã",
-    lunch: "Almoço Completo",
-    dinner: "Jantar Completo",
-  };
-
-  const getMealLastUpdate = () => {
-    if (!todayMenu?.created_at) return "--:--";
-
-    return todayMenu.created_at.slice(0, 5);
-  };
-
-  const apiType =
-    activeTab === "breakfast"
-      ? "desjejum"
-      : activeTab === "lunch"
-      ? "almoco"
-      : "jantar";
+  const mealsWithState = MEALS.map((meal) => {
+    const isCurrent = effectiveMealKey === meal.key;
+    return {
+      ...meal,
+      isCurrent,
+      isOpen: isCurrent && restaurantStatus.isOpen,
+      isLastServed: isCurrent && restaurantStatus.isLastServed,
+      sections: adaptMealData(dayData, meal.apiType),
+    };
+  });
 
   return (
-    <div className="space-y-8 pb-10 overflow-x-hidden">
-      <section className="relative overflow-hidden rounded-3xl bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-white dark:border-zinc-800/80 p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-blue-400/10 dark:bg-zinc-700/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-400/10 dark:bg-zinc-700/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none" />
+    <div className="h-full">
+      {/* Mobile: feed vertical estilo TikTok */}
+      <div className="relative h-full lg:hidden">
+        <div
+          ref={feedRef}
+          onScroll={onFeedScroll}
+          className="h-full overflow-y-auto snap-y snap-mandatory scrollbar-none"
+        >
+          {mealsWithState.map((meal) => (
+            <MealFeedSection
+              key={meal.key}
+              title={meal.title}
+              timeLabel={meal.timeLabel}
+              sections={meal.sections}
+              isCurrent={meal.isCurrent}
+              isOpen={meal.isOpen}
+              isLastServed={meal.isLastServed}
+              dateStr={dateStr}
+              mealType={meal.apiType}
+              accent={meal.accent}
+            />
+          ))}
+        </div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-8">
-          <div className="space-y-5 max-w-xl text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/50 dark:bg-zinc-800/60 backdrop-blur-md border border-blue-200/50 dark:border-zinc-700 text-blue-700 dark:text-blue-400 text-xs font-semibold tracking-wide shadow-sm">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Cardápio Diário • UEFS</span>
-            </div>
+        {/* dots de progresso do feed (café/almoço/jantar) */}
+        <div className="absolute left-2.5 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-30">
+          {MEALS.map((_, idx) => (
+            <span
+              key={idx}
+              className={`w-1 rounded-full transition-all duration-300 ${
+                idx === activeIndex
+                  ? "h-5 bg-blue-600 dark:bg-blue-400"
+                  : "h-2 bg-gray-300 dark:bg-zinc-700"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
 
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-zinc-50 leading-tight">
-              Menos Complicação,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-                Mais Informação.
-              </span>
+      {/* Desktop: as 3 refeições lado a lado */}
+      <div className="hidden lg:block h-full overflow-y-auto scrollbar-none px-8 py-8">
+        <div className="flex items-center gap-2.5 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <Calendar className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900 dark:text-zinc-50 leading-none capitalize">
+              {todayMenu.dia}
             </h1>
-
-            <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
-              <div className="flex items-center gap-2 px-3.5 py-1.5 bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-xl text-xs font-medium text-gray-700 dark:text-zinc-300 border border-gray-200/50 dark:border-zinc-700/50 shadow-sm">
-                <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span>{todayMenu.dia}, {todayMenu.data}</span>
-              </div>
-
-              <div
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold border backdrop-blur-md transition-all duration-300 shadow-sm ${
-                  restaurantStatus.isOpen
-                    ? "bg-emerald-50/60 dark:bg-zinc-800/80 border-emerald-200/50 dark:border-zinc-700 text-emerald-700 dark:text-emerald-400"
-                    : "bg-amber-50/60 dark:bg-zinc-800/80 border-amber-200/50 dark:border-zinc-700 text-red-700 dark:text-red-400"
-                }`}
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    restaurantStatus.isOpen ? "bg-emerald-500" : "bg-red-500"
-                  } animate-pulse`}
-                />
-                <span>
-                  {restaurantStatus.isOpen ? "Aberto agora: " : "Fechado: "}
-                  {restaurantStatus.badgeText}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 px-3.5 py-1.5 bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-xl text-xs font-medium text-gray-700 dark:text-zinc-300 border border-gray-200/50 dark:border-zinc-700/50 shadow-sm">
-                <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span>Atualizado às {getMealLastUpdate()}</span>
-              </div>
-            </div>
+            <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">{todayMenu.data}</p>
           </div>
         </div>
-      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <main className="lg:col-span-8 space-y-6">
-          <MealTabs activeTab={activeTab} onChangeTab={setSelectedTab} />
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MealCard
-                title={tabTitles[activeTab]}
-                sections={adaptMealData(dayData, apiType)}
-                isCurrent={
-                  currentMeal?.isActive
-                    ? currentMeal.mealType === activeTab
-                    : restaurantStatus.defaultMeal === activeTab
-                }
-                isOpen={restaurantStatus.isOpen}
-                isLastServed={restaurantStatus.isLastServed}
-              />
-            </motion.div>
-          </AnimatePresence>
-        </main>
-
-        <aside className="lg:col-span-4 space-y-6">
-          <div className="rounded-3xl bg-white dark:bg-zinc-900/70 border border-gray-100 dark:border-zinc-900/70 p-6 shadow-2xs flex flex-col">
-            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold text-xs tracking-wider uppercase mb-3">
-              <HeartHandshake className="w-4 h-4" />
-              <span>Dica Saudável</span>
-            </div>
-
-            <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-100 mb-2">
-              Equilíbrio no seu prato
-            </h3>
-
-            <p className="text-sm text-gray-500 dark:text-zinc-400 leading-relaxed mb-6">
-              Inclua frutas e verduras nas suas refeições diárias para uma vida universitária mais saudável e disposta!
-            </p>
-
-            <div className="h-44 w-full flex items-center justify-center bg-emerald-50/60 dark:bg-zinc-900/70 rounded-2xl border border-emerald-100/80 dark:border-zinc-900/70 relative overflow-hidden mt-auto">
-              <img
-                src={saladaImg}
-                alt="Salada Saudável"
-                className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-xl absolute bottom-0 hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-          </div>
-        </aside>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+          {mealsWithState.map((meal) => (
+            <MealCard
+              key={meal.key}
+              title={meal.title}
+              sections={meal.sections}
+              isCurrent={meal.isCurrent}
+              isOpen={meal.isOpen}
+              isLastServed={meal.isLastServed}
+              dateStr={dateStr}
+            />
+          ))}
+        </div>
       </div>
-      <Footer />
     </div>
   );
 }
