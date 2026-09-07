@@ -6,7 +6,8 @@ import type {
   RestaurantStatus,
 } from "@/types/menu";
 
-export interface EvaluationStats {
+export interface ItemStats {
+  item_key: string;
   likes: number;
   dislikes: number;
   percentage_likes: number;
@@ -54,34 +55,38 @@ export const menuService = {
   },
 
   /**
-   * Obtém as estatísticas de votação de uma refeição específica
+   * Obtém as estatísticas de avaliação de todos os pratos de uma refeição
    */
-  getMealStats: async (
+  getItemStats: async (
     date: string,
     mealType: string,
-  ): Promise<EvaluationStats> => {
-    const { data } = await api.get<EvaluationStats>(
-      `/reviews/stats/${date}/${mealType}`,
+  ): Promise<ItemStats[]> => {
+    const { data } = await api.get<ItemStats[]>(
+      `/reviews/items/stats/${date}/${mealType}`,
     );
     return data;
   },
 
   /**
-   * Envia a avaliação da refeição para o servidor
+   * Envia a avaliação de um prato específico
    */
-  voteMeal: async ({
+  voteItem: async ({
     dateStr,
     mealType,
+    itemKey,
     voteType,
   }: {
     dateStr: string;
     mealType: "desjejum" | "almoco" | "jantar";
+    itemKey: string;
     voteType: "like" | "dislike";
-  }): Promise<void> => {
-    await api.post("/reviews/evaluate", {
+  }): Promise<ItemStats> => {
+    const { data } = await api.post<ItemStats>("/reviews/items/evaluate", {
       date: dateStr,
       meal_type: mealType,
+      item_key: itemKey,
       vote: voteType,
     });
+    return data;
   },
 };

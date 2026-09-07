@@ -10,8 +10,8 @@ export const menuKeys = {
   status: () => [...menuKeys.all, "status"] as const, // <- Adicionado aqui
   date: (date: string) => [...menuKeys.all, "date", date] as const,
   network: () => [...menuKeys.all, "network-status"] as const,
-  stats: (date: string, mealType: string) =>
-    [...menuKeys.all, "stats", date, mealType] as const,
+  itemStats: (date: string, mealType: string) =>
+    [...menuKeys.all, "item-stats", date, mealType] as const,
 };
 
 export function useWeeklyMenu() {
@@ -45,17 +45,6 @@ export function useCurrentMeal() {
   });
 }
 
-export function useMealStats(
-  date: string,
-  mealType: "desjejum" | "almoco" | "jantar",
-) {
-  return useQuery({
-    queryKey: menuKeys.stats(date, mealType),
-    queryFn: () => menuService.getMealStats(date, mealType),
-    staleTime: 1000 * 60 * 2,
-  });
-}
-
 export function useNetworkCheck() {
   return useQuery({
     queryKey: menuKeys.network(),
@@ -69,14 +58,22 @@ export function useNetworkCheck() {
   });
 }
 
-export function useVoteMeal() {
+export function useItemStats(date: string, mealType: "desjejum" | "almoco" | "jantar") {
+  return useQuery({
+    queryKey: menuKeys.itemStats(date, mealType),
+    queryFn: () => menuService.getItemStats(date, mealType),
+    staleTime: 1000 * 60 * 2,
+  });
+}
+
+export function useVoteItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: menuService.voteMeal,
+    mutationFn: menuService.voteItem,
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: menuKeys.stats(variables.dateStr, variables.mealType),
+        queryKey: menuKeys.itemStats(variables.dateStr, variables.mealType),
       });
     },
   });
