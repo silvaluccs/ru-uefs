@@ -11,7 +11,7 @@ from backend.schemas.queue import (
     WeightedPercents,
 )
 from backend.services.evaluation_service import verify_uefs_ip
-from backend.services.menu_service import FUSO_BAHIA
+from backend.services.menu_service import FUSO_BAHIA, get_restaurant_status
 
 WINDOW_MINUTES = 30
 MIN_VOTES = 15
@@ -37,6 +37,13 @@ async def submit_queue_vote(
         raise HTTPException(
             status_code=403,
             detail="Acesso negado. Apenas estudantes conectados à rede da UEFS podem votar na fila.",
+        )
+
+    status = await get_restaurant_status()
+    if not status["isOpen"]:
+        raise HTTPException(
+            status_code=400,
+            detail="O restaurante está fechado no momento. A votação da fila só é liberada durante o funcionamento do RU.",
         )
 
     await collection.insert_one({"level": level.value, "timestamp": _now()})

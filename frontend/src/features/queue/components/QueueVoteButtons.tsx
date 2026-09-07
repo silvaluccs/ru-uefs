@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { WifiOff, Timer } from "lucide-react";
-import { useNetworkCheck } from "@/features/menu/hooks/useMenu";
+import { WifiOff, Timer, Clock } from "lucide-react";
+import { useNetworkCheck, useRestaurantStatus } from "@/features/menu/hooks/useMenu";
 import { useVoteQueue } from "@/features/queue/hooks/useQueue";
 import type { QueueLevel } from "@/types/queue";
 
@@ -16,12 +16,14 @@ const OPTIONS: { key: QueueLevel; label: string; dot: string; tint: string; bord
 
 export function QueueVoteButtons() {
   const { data: networkData, isLoading: isLoadingNetwork } = useNetworkCheck();
+  const { data: restaurantStatus, isLoading: isLoadingStatus } = useRestaurantStatus();
   const { mutate: vote } = useVoteQueue();
 
   const [myVote, setMyVote] = useState<QueueLevel | null>(null);
   const [cooldown, setCooldown] = useState(0);
 
   const isUefsNetwork = networkData?.is_uefs_network ?? false;
+  const isOpen = restaurantStatus?.isOpen ?? false;
 
   useEffect(() => {
     const savedVote = localStorage.getItem(MY_VOTE_KEY) as QueueLevel | null;
@@ -49,7 +51,7 @@ export function QueueVoteButtons() {
     return () => clearInterval(timer);
   }, [cooldown]);
 
-  const canVote = isUefsNetwork && cooldown <= 0;
+  const canVote = isUefsNetwork && isOpen && cooldown <= 0;
 
   const handleVote = (level: QueueLevel) => {
     if (!canVote) return;
@@ -63,13 +65,22 @@ export function QueueVoteButtons() {
     vote(level);
   };
 
-  if (isLoadingNetwork) return null;
+  if (isLoadingNetwork || isLoadingStatus) return null;
 
   if (!isUefsNetwork) {
     return (
       <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-500 bg-amber-50/40 dark:bg-amber-950/20 p-2.5 rounded-xl border border-amber-100 dark:border-amber-900/40">
         <WifiOff className="w-3.5 h-3.5 shrink-0" />
         <span>Conecte-se à rede da UEFS para votar na fila.</span>
+      </div>
+    );
+  }
+
+  if (!isOpen) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-zinc-400 bg-gray-50 dark:bg-zinc-900 p-2.5 rounded-xl border border-gray-200 dark:border-zinc-800">
+        <Clock className="w-3.5 h-3.5 shrink-0" />
+        <span>O RU está fechado agora. A votação da fila abre junto com o restaurante.</span>
       </div>
     );
   }
